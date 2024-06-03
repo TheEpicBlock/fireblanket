@@ -36,7 +36,7 @@ public class DumpCommand {
 				.executes(server -> {
 					server.getSource().getServer().submit(() -> {
 						ServerWorld world = server.getSource().getWorld();
-						for (ChunkHolder holder : world.getChunkManager().threadedAnvilChunkStorage.entryIterator()) {
+						for (ChunkHolder holder : world.getChunkManager().chunkLoadingManager.entryIterator()) {
 							WorldChunk chunk = holder.getWorldChunk();
 							if (chunk == null) {
 								continue;
@@ -89,7 +89,7 @@ public class DumpCommand {
 					MinecraftServer server = cmd.getSource().getServer();
 					server.submit(() -> {
 						for (ServerWorld world : server.getWorlds()) {
-							cmd.getSource().sendFeedback(() -> Text.literal("----- Dumping types for dimension " + world.getDimensionKey().getValue() + " --------"), false);
+							cmd.getSource().sendFeedback(() -> Text.literal("----- Dumping types for dimension " + world.getDimensionEntry().getKey().get().getValue() + " --------"), false);
 
 							Object2IntOpenHashMap<EntityType<?>> map = new Object2IntOpenHashMap<>();
 

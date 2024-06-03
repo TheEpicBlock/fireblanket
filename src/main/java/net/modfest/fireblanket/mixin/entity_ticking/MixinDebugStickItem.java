@@ -1,6 +1,8 @@
 package net.modfest.fireblanket.mixin.entity_ticking;
 
-import net.minecraft.client.item.TooltipContext;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.NbtComponent;
+import net.minecraft.item.tooltip.TooltipType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -13,9 +15,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
-import net.minecraft.world.World;
 import net.modfest.fireblanket.mixinsupport.ImmmovableLivingEntity;
-import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -35,14 +35,14 @@ public class MixinDebugStickItem extends Item {
 
 	@Inject(method = "useOnBlock", at = @At("HEAD"), cancellable = true)
 	private void fireblanket$dontApplyCustom(ItemUsageContext context, CallbackInfoReturnable<ActionResult> cir) {
-		if (isCustomFireblanket(context.getStack().getOrCreateNbt())) {
+		if (isCustomFireblanket(context.getStack().getComponents().getOrDefault(DataComponentTypes.CUSTOM_DATA, NbtComponent.DEFAULT).copyNbt())) {
 			cir.setReturnValue(ActionResult.PASS);
 		}
 	}
 
 	@Override
 	public ActionResult useOnEntity(ItemStack stack, PlayerEntity user, LivingEntity entity, Hand hand) {
-		NbtCompound nbt = stack.getOrCreateNbt();
+		NbtCompound nbt = stack.getComponents().getOrDefault(DataComponentTypes.CUSTOM_DATA, NbtComponent.DEFAULT).copyNbt();
 		if (isCustomFireblanket(nbt)) {
 			if (!user.getWorld().isClient) {
 				if (nbt.getBoolean(NOAI)) {
@@ -71,21 +71,16 @@ public class MixinDebugStickItem extends Item {
 
 	@Override
 	public Text getName(ItemStack stack) {
-		if (stack.hasNbt()) {
-			if (isCustomFireblanket(stack.getNbt())) {
-				return Text.literal("[Fireblanket] Debug Hammer");
-			}
+		if (isCustomFireblanket(stack.getComponents().getOrDefault(DataComponentTypes.CUSTOM_DATA, NbtComponent.DEFAULT).copyNbt())) {
+			return Text.literal("[Fireblanket] Debug Hammer");
 		}
 
 		return super.getName(stack);
 	}
 
 	@Override
-	public void appendTooltip(ItemStack stack, @Nullable World world, List<Text> tooltip, TooltipContext context) {
-		NbtCompound nbt = stack.getNbt();
-		if (nbt == null) {
-			return;
-		}
+	public void appendTooltip(ItemStack stack, TooltipContext context, List<Text> tooltip, TooltipType type) {
+		NbtCompound nbt = stack.getComponents().getOrDefault(DataComponentTypes.CUSTOM_DATA, NbtComponent.DEFAULT).copyNbt();
 
 		if (isCustomFireblanket(nbt)) {
 			tooltip.add(Text.literal(Formatting.RED + "This debug stick can't edit blocks!"));

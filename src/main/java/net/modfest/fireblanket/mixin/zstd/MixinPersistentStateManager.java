@@ -6,9 +6,10 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
-import java.util.function.Function;
+import java.util.function.BiFunction;
 import java.util.zip.GZIPInputStream;
 
+import net.minecraft.registry.RegistryWrapper;
 import org.slf4j.Logger;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -27,7 +28,6 @@ import net.minecraft.world.PersistentState;
 import net.minecraft.world.PersistentStateManager;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(PersistentStateManager.class)
@@ -48,6 +48,8 @@ public abstract class MixinPersistentStateManager {
 
 	@Shadow public abstract NbtCompound readNbt(String id, DataFixTypes dataFixTypes, int currentSaveVersion) throws IOException;
 
+	@Shadow @Final private RegistryWrapper.WrapperLookup registryLookup;
+
 	private File getZstdFile(String id) {
 		return new File(directory, id+".zat");
 	}
@@ -57,11 +59,11 @@ public abstract class MixinPersistentStateManager {
 	 * @reason Don't check file before calling readNbt
 	 */
 	@Overwrite
-	private <T extends PersistentState> T readFromFile(Function<NbtCompound, T> reader,  DataFixTypes dataFixTypes, String id) {
+	private <T extends PersistentState> T readFromFile(BiFunction<NbtCompound, RegistryWrapper.WrapperLookup, T> reader, DataFixTypes dataFixTypes, String id) {
 		try {
 			NbtCompound cmp = readNbt(id, dataFixTypes, SharedConstants.getGameVersion().getSaveVersion().getId());
 			if (cmp == null) return null;
-			return reader.apply(cmp.getCompound("data"));
+			return reader.apply(cmp.getCompound("data"), this.registryLookup);
 		} catch (Exception e) {
 			LOGGER.error("Error loading saved data: {}", id, e);
 		}

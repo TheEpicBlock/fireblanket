@@ -12,10 +12,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(ChunkBuilder.BuiltChunk.RebuildTask.class)
 public class MixinRebuildTask {
-	@Inject(method = "addBlockEntity", at = @At("TAIL"))
-	private <E extends BlockEntity> void fireblanket$addBEAnyway(ChunkBuilder.BuiltChunk.RebuildTask.RenderData renderData, E blockEntity, CallbackInfo ci) {
-		if (!renderData.blockEntities.contains(blockEntity) && ClientState.MASKED_BERS.contains(blockEntity.getType())) {
-			renderData.blockEntities.add(blockEntity);
-		}
-	}
+	// todo
+//	@Inject(method = "addBlockEntity", at = @At("TAIL"))
+//	private <E extends BlockEntity> void fireblanket$addBEAnyway(ChunkBuilder.BuiltChunk.RebuildTask.RenderData renderData, E blockEntity, CallbackInfo ci) {
+//		if (!renderData.blockEntities.contains(blockEntity) && ClientState.MASKED_BERS.contains(blockEntity.getType())) {
+//			renderData.blockEntities.add(blockEntity);
+//		}
+//	}
 }

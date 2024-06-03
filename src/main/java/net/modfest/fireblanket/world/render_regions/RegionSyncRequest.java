@@ -14,6 +14,7 @@ import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.entity.EntityType;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.listener.ClientCommonPacketListener;
+import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
@@ -22,38 +23,40 @@ import net.modfest.fireblanket.Fireblanket;
 import net.modfest.fireblanket.world.render_regions.RenderRegion.Mode;
 import net.modfest.fireblanket.world.render_regions.RegionSyncRequest.*;
 
-public sealed interface RegionSyncRequest permits InvalidCommand, FullState, Reset, AddRegion,
+public sealed interface RegionSyncRequest extends CustomPayload permits InvalidCommand, FullState, Reset, AddRegion,
 		DestroyRegion, DetachAll, AttachEntity, AttachBlock, DetachEntity, DetachBlock, RedefineRegion, FullStateLegacy,
 		RegistryRegionSyncRequest {
 
-	public enum Type {
-		INVALID_COMMAND(InvalidCommand::read),
-		FULL_STATE_LEGACY(FullStateLegacy::read),
-		RESET(Reset::read),
-		ADD_REGION(AddRegion::read),
-		DESTROY_REGION(DestroyRegion::read),
-		DETACH_ALL(DetachAll::read),
-		ATTACH_ENTITY(AttachEntity::read),
-		ATTACH_BLOCK(AttachBlock::read),
-		DETACH_ENTITY(DetachEntity::read),
-		DETACH_BLOCK(DetachBlock::read),
-		REDEFINE_REGION(RedefineRegion::read),
-		ATTACH_ENTITY_TYPE(AttachEntityType::read),
-		DETACH_ENTITY_TYPE(DetachEntityType::read),
-		ATTACH_BLOCK_ENTITY_TYPE(AttachBlockEntityType::read),
-		DETACH_BLOCK_ENTITY_TYPE(DetachBlockEntityType::read),
-		FULL_STATE(FullState::read),
+	public enum RequestType {
+		INVALID_COMMAND(InvalidCommand::read, "invalid_command"),
+		FULL_STATE_LEGACY(FullStateLegacy::read, "full_state_legacy"),
+		RESET(Reset::read, "reset"),
+		ADD_REGION(AddRegion::read, "add_region"),
+		DESTROY_REGION(DestroyRegion::read, "destroy_region"),
+		DETACH_ALL(DetachAll::read, "detach_all"),
+		ATTACH_ENTITY(AttachEntity::read, "attach_entity"),
+		ATTACH_BLOCK(AttachBlock::read, "attach_block"),
+		DETACH_ENTITY(DetachEntity::read, "detach_entity"),
+		DETACH_BLOCK(DetachBlock::read, "detach_block"),
+		REDEFINE_REGION(RedefineRegion::read, "redefine_region"),
+		ATTACH_ENTITY_TYPE(AttachEntityType::read, "attach_entity_type"),
+		DETACH_ENTITY_TYPE(DetachEntityType::read, "detach_entity_type"),
+		ATTACH_BLOCK_ENTITY_TYPE(AttachBlockEntityType::read, "attach_block_entity_type"),
+		DETACH_BLOCK_ENTITY_TYPE(DetachBlockEntityType::read, "detach_block_entity_type"),
+		FULL_STATE(FullState::read, "full_state"),
 		;
-		public static final ImmutableList<Type> VALUES = ImmutableList.copyOf(values());
+		public static final ImmutableList<RequestType> VALUES = ImmutableList.copyOf(values());
 		public final Function<PacketByteBuf, ? extends RegionSyncRequest> reader;
+		public final Identifier id;
 
-		Type(Function<PacketByteBuf, ? extends RegionSyncRequest> reader) {
+		RequestType(Function<PacketByteBuf, ? extends RegionSyncRequest> reader, String name) {
 			this.reader = reader;
+			this.id = Identifier.of("fireblanket", name);
 		}
 		
 	}
 	
-	Type type();
+	RequestType type();
 	
 //  static self read(PacketByteBuf buf);
 	void write(PacketByteBuf buf);
@@ -91,9 +94,13 @@ public sealed interface RegionSyncRequest permits InvalidCommand, FullState, Res
 		PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
 		write(buf, id);
 
-		return ServerPlayNetworking.createS2CPacket(id, buf);
+		return ServerPlayNetworking.createS2CPacket(this);
 	}
 
+	@Override
+	default Id<? extends CustomPayload> getId() {
+		return new Id<RegionSyncRequest>(this.type().id);
+	}
 
 	private static void writeRegion(PacketByteBuf buf, RenderRegion r) {
 		buf.writeByte(r.mode().ordinal());
@@ -123,19 +130,19 @@ public sealed interface RegionSyncRequest permits InvalidCommand, FullState, Res
 	
 	static RegionSyncRequest read(PacketByteBuf buf) {
 		int tid = buf.readUnsignedByte();
-		if (tid >= Type.VALUES.size()) {
+		if (tid >= RequestType.VALUES.size()) {
 			Fireblanket.LOGGER.warn("Unknown region sync command id "+tid);
 			return new InvalidCommand();
 		}
-		Type t = Type.VALUES.get(tid);
+		RequestType t = RequestType.VALUES.get(tid);
 		return t.reader.apply(buf);
 	}
 	
 	public record InvalidCommand() implements RegionSyncRequest {
 
 		@Override
-		public Type type() {
-			return Type.INVALID_COMMAND;
+		public RequestType type() {
+			return RequestType.INVALID_COMMAND;
 		}
 
 		@Override
@@ -164,8 +171,8 @@ public sealed interface RegionSyncRequest permits InvalidCommand, FullState, Res
 			ImmutableMultimap<RenderRegion, Long> blockAttachments) implements RegionSyncRequest {
 		
 		@Override
-		public Type type() {
-			return Type.FULL_STATE_LEGACY;
+		public RequestType type() {
+			return RequestType.FULL_STATE_LEGACY;
 		}
 
 		@Override
@@ -212,8 +219,8 @@ public sealed interface RegionSyncRequest permits InvalidCommand, FullState, Res
 	public record Reset(boolean valid) implements RegionSyncRequest {
 
 		@Override
-		public Type type() {
-			return Type.RESET;
+		public RequestType type() {
+			return RequestType.RESET;
 		}
 
 		@Override
@@ -235,8 +242,8 @@ public sealed interface RegionSyncRequest permits InvalidCommand, FullState, Res
 	public record AddRegion(String name, RenderRegion region) implements RegionSyncRequest {
 
 		@Override
-		public Type type() {
-			return Type.ADD_REGION;
+		public RequestType type() {
+			return RequestType.ADD_REGION;
 		}
 
 		@Override
@@ -264,8 +271,8 @@ public sealed interface RegionSyncRequest permits InvalidCommand, FullState, Res
 	public record DestroyRegion(String name) implements RegionSyncRequest {
 
 		@Override
-		public Type type() {
-			return Type.DESTROY_REGION;
+		public RequestType type() {
+			return RequestType.DESTROY_REGION;
 		}
 
 		@Override
@@ -292,8 +299,8 @@ public sealed interface RegionSyncRequest permits InvalidCommand, FullState, Res
 	public record DetachAll(String name) implements RegionSyncRequest {
 
 		@Override
-		public Type type() {
-			return Type.DETACH_ALL;
+		public RequestType type() {
+			return RequestType.DETACH_ALL;
 		}
 
 		@Override
@@ -320,8 +327,8 @@ public sealed interface RegionSyncRequest permits InvalidCommand, FullState, Res
 	public record AttachEntity(String name, UUID entity) implements RegionSyncRequest {
 
 		@Override
-		public Type type() {
-			return Type.ATTACH_ENTITY;
+		public RequestType type() {
+			return RequestType.ATTACH_ENTITY;
 		}
 
 		@Override
@@ -349,8 +356,8 @@ public sealed interface RegionSyncRequest permits InvalidCommand, FullState, Res
 	public record AttachBlock(String name, long pos) implements RegionSyncRequest {
 
 		@Override
-		public Type type() {
-			return Type.ATTACH_BLOCK;
+		public RequestType type() {
+			return RequestType.ATTACH_BLOCK;
 		}
 
 		@Override
@@ -377,8 +384,8 @@ public sealed interface RegionSyncRequest permits InvalidCommand, FullState, Res
 	public record DetachEntity(String name, UUID entity) implements RegionSyncRequest {
 
 		@Override
-		public Type type() {
-			return Type.DETACH_ENTITY;
+		public RequestType type() {
+			return RequestType.DETACH_ENTITY;
 		}
 
 		@Override
@@ -406,8 +413,8 @@ public sealed interface RegionSyncRequest permits InvalidCommand, FullState, Res
 	public record DetachBlock(String name, long pos) implements RegionSyncRequest {
 
 		@Override
-		public Type type() {
-			return Type.DETACH_BLOCK;
+		public RequestType type() {
+			return RequestType.DETACH_BLOCK;
 		}
 
 		@Override
@@ -435,8 +442,8 @@ public sealed interface RegionSyncRequest permits InvalidCommand, FullState, Res
 	public record RedefineRegion(String name, RenderRegion region) implements RegionSyncRequest {
 
 		@Override
-		public Type type() {
-			return Type.REDEFINE_REGION;
+		public RequestType type() {
+			return RequestType.REDEFINE_REGION;
 		}
 
 		@Override
@@ -464,8 +471,8 @@ public sealed interface RegionSyncRequest permits InvalidCommand, FullState, Res
 	public record AttachEntityType(String name, Identifier id) implements RegistryRegionSyncRequest<EntityType<?>> {
 
 		@Override
-		public Type type() {
-			return Type.ATTACH_ENTITY_TYPE;
+		public RequestType type() {
+			return RequestType.ATTACH_ENTITY_TYPE;
 		}
 		
 		@Override
@@ -487,8 +494,8 @@ public sealed interface RegionSyncRequest permits InvalidCommand, FullState, Res
 	public record DetachEntityType(String name, Identifier id) implements RegistryRegionSyncRequest<EntityType<?>> {
 
 		@Override
-		public Type type() {
-			return Type.DETACH_ENTITY_TYPE;
+		public RequestType type() {
+			return RequestType.DETACH_ENTITY_TYPE;
 		}
 		
 		@Override
@@ -510,8 +517,8 @@ public sealed interface RegionSyncRequest permits InvalidCommand, FullState, Res
 	public record AttachBlockEntityType(String name, Identifier id) implements RegistryRegionSyncRequest<BlockEntityType<?>> {
 
 		@Override
-		public Type type() {
-			return Type.ATTACH_BLOCK_ENTITY_TYPE;
+		public RequestType type() {
+			return RequestType.ATTACH_BLOCK_ENTITY_TYPE;
 		}
 		
 		@Override
@@ -533,8 +540,8 @@ public sealed interface RegionSyncRequest permits InvalidCommand, FullState, Res
 	public record DetachBlockEntityType(String name, Identifier id) implements RegistryRegionSyncRequest<BlockEntityType<?>> {
 
 		@Override
-		public Type type() {
-			return Type.DETACH_BLOCK_ENTITY_TYPE;
+		public RequestType type() {
+			return RequestType.DETACH_BLOCK_ENTITY_TYPE;
 		}
 		
 		@Override
@@ -556,8 +563,8 @@ public sealed interface RegionSyncRequest permits InvalidCommand, FullState, Res
 	public record FullState(ImmutableList<ExplainedRenderRegion> regions) implements RegionSyncRequest {
 		
 		@Override
-		public Type type() {
-			return Type.FULL_STATE;
+		public RequestType type() {
+			return RequestType.FULL_STATE;
 		}
 
 		@Override

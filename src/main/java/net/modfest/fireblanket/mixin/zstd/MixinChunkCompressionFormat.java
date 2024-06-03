@@ -1,5 +1,6 @@
 package net.modfest.fireblanket.mixin.zstd;
 
+import net.minecraft.world.storage.ChunkCompressionFormat;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -11,18 +12,18 @@ import com.github.luben.zstd.ZstdOutputStream;
 
 import it.unimi.dsi.fastutil.io.FastBufferedInputStream;
 import it.unimi.dsi.fastutil.io.FastBufferedOutputStream;
-import net.minecraft.world.storage.ChunkStreamVersion;
-import net.modfest.fireblanket.mixinsupport.ChunkStreamVersionExt;
+import net.modfest.fireblanket.mixinsupport.ChunkCompressionFormatExt;
 
-@Mixin(ChunkStreamVersion.class)
-public class MixinChunkStreamVersion {
+@Mixin(ChunkCompressionFormat.class)
+public class MixinChunkCompressionFormat {
 
 	@Shadow
-	private static ChunkStreamVersion add(ChunkStreamVersion version) { throw new AbstractMethodError(); }
+	private static ChunkCompressionFormat add(ChunkCompressionFormat version) { throw new AbstractMethodError(); }
 	
 	@Inject(at=@At("TAIL"), method="<clinit>")
 	private static void fireblanket$addZstd(CallbackInfo ci) {
-		add(ChunkStreamVersionExt.ZSTD = new ChunkStreamVersion(53, // chosen by fair dice roll. guaranteed to be random.
+		add(ChunkCompressionFormatExt.ZSTD = new ChunkCompressionFormat(53, // chosen by fair dice roll. guaranteed to be random.
+				"ZSTD",
 				in -> new FastBufferedInputStream(new ZstdInputStream(in)),
 				out -> {
 					var z = new ZstdOutputStream(out);

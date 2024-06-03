@@ -35,7 +35,7 @@ public class CmdFindReplaceCommand {
 						int matches = 0;
 						
 						ServerWorld world = ctx.getSource().getWorld();
-						for (ChunkHolder holder : world.getChunkManager().threadedAnvilChunkStorage.entryIterator()) {
+						for (ChunkHolder holder : world.getChunkManager().chunkLoadingManager.entryIterator()) {
 							WorldChunk chunk = holder.getWorldChunk();
 							if (chunk == null) {
 								continue;

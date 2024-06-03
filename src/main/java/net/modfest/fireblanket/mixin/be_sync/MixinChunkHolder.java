@@ -1,22 +1,21 @@
 package net.modfest.fireblanket.mixin.be_sync;
 
-import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
+import io.netty.buffer.Unpooled;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.RegistryByteBuf;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
-import net.minecraft.registry.Registries;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ChunkHolder;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.WorldChunk;
-import net.modfest.fireblanket.Fireblanket;
 import net.modfest.fireblanket.net.BEUpdate;
+import net.modfest.fireblanket.net.BatchedBEUpdatePayload;
 import net.modfest.fireblanket.world.CachedCompoundBE;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -105,18 +104,11 @@ public abstract class MixinChunkHolder {
 				return;
 			}
 
-			PacketByteBuf buf = PacketByteBufs.create();
-			buf.writeVarInt(size);
-
-			for (int i = 0; i < size; i++) {
-				BEUpdate bup = BATCHED_UPDATES.get(i);
-				buf.writeBlockPos(bup.pos());
-				buf.writeRegistryValue(Registries.BLOCK_ENTITY_TYPE, bup.type());
-				buf.writeNbt(bup.nbt());
-			}
+//			RegistryByteBuf buf = RegistryByteBuf.makeFactory(chunk.getWorld().getRegistryManager()).apply(Unpooled.buffer());
+//			BatchedBEUpdatePayload.CODEC.encode(buf, new BatchedBEUpdatePayload(BATCHED_UPDATES));
 
 			for (ServerPlayerEntity p : list) {
-				ServerPlayNetworking.send(p, Fireblanket.BATCHED_BE_UPDATE, buf);
+				ServerPlayNetworking.send(p, new BatchedBEUpdatePayload(BATCHED_UPDATES));
 			}
 
 			BATCHED_UPDATES.clear();

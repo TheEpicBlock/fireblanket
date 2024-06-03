@@ -1,14 +1,12 @@
 package net.modfest.fireblanket.mixin.region_chunk_cache;
 
 import com.mojang.datafixers.DataFixer;
-import com.mojang.datafixers.util.Either;
 import net.minecraft.server.WorldGenerationProgressListener;
-import net.minecraft.server.world.ChunkHolder;
+import net.minecraft.server.world.OptionalChunk;
 import net.minecraft.server.world.ServerChunkManager;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.structure.StructureTemplateManager;
 import net.minecraft.util.Util;
-import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.profiler.Profiler;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
@@ -19,7 +17,6 @@ import net.minecraft.world.level.storage.LevelStorage;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -41,10 +38,11 @@ public abstract class MixinServerChunkManager {
 
 	@Shadow @Final private ServerChunkManager.MainThreadExecutor mainThreadExecutor;
 
-	@Shadow protected abstract CompletableFuture<Either<Chunk, ChunkHolder.Unloaded>> getChunkFuture(int chunkX, int chunkZ, ChunkStatus leastStatus, boolean create);
-
+	@Shadow protected abstract CompletableFuture<OptionalChunk<Chunk>> getChunkFuture(int chunkX, int chunkZ, ChunkStatus leastStatus, boolean create);
 
 	@Shadow public abstract @Nullable Chunk getChunk(int x, int z, ChunkStatus leastStatus, boolean create);
+
+	@Shadow protected abstract void putInCache(long pos, @Nullable Chunk chunk, ChunkStatus status);
 
 	private Chunk[] fireblanket$chunkCache;
 	private ChunkStatus[] fireblanket$chunkStatusCache;
@@ -121,22 +119,19 @@ public abstract class MixinServerChunkManager {
 
 					// Generate the chunk
 					profiler.visit("getChunkCacheMiss");
-					CompletableFuture<Either<Chunk, ChunkHolder.Unloaded>> completableFuture = this.getChunkFuture(x, z, leastStatus, create);
+					CompletableFuture<OptionalChunk<Chunk>> completableFuture = this.getChunkFuture(x, z, leastStatus, create);
 					this.mainThreadExecutor.runTasks(completableFuture::isDone);
-					chunk = completableFuture.join().map(chunkx -> chunkx, unloaded -> {
-						if (create) {
-							throw Util.throwOrPause(new IllegalStateException("Chunk not there when requested: " + unloaded));
-						} else {
-							return null;
-						}
-					});
+					OptionalChunk<Chunk> optionalChunk = completableFuture.join();
+					Chunk chunkx = optionalChunk.orElse(null);
+					if (chunkx == null && create) {
+						throw Util.throwOrPause(new IllegalStateException("Chunk not there when requested: " + optionalChunk.getError()));
+					} else {
+						// Put in the cache for next time
+						cache[cacheIdx] = chunk;
+						scache[cacheIdx] = leastStatus;
 
-					// Put in the cache for next time
-					cache[cacheIdx] = chunk;
-					scache[cacheIdx] = leastStatus;
-
-					cir.setReturnValue(chunk);
-					return;
+						cir.setReturnValue(chunk);
+					}
 				}
 			}
 		}

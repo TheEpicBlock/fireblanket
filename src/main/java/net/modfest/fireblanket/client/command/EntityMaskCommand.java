@@ -8,6 +8,7 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.Dynamic3CommandExceptionType;
 
+import com.mojang.serialization.Codec;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.command.CommandRegistryAccess;
@@ -27,7 +28,7 @@ public class EntityMaskCommand {
 	public static void init(LiteralArgumentBuilder<FabricClientCommandSource> base, CommandRegistryAccess access) {
 		base.then(literal("entity")
 			.then(literal("add")
-				.then(argument("type", RegistryEntryArgumentType.registryEntry(access, RegistryKeys.ENTITY_TYPE))
+				.then(argument("type", new EntityTypeArgumentType(access))
 					.executes(client -> {
 						RegistryEntry.Reference<EntityType<?>> type = getRegistryEntry(client, "type", RegistryKeys.ENTITY_TYPE);
 
@@ -44,7 +45,7 @@ public class EntityMaskCommand {
 				)
 			)
 			.then(literal("remove")
-				.then(argument("type", RegistryEntryArgumentType.registryEntry(access, RegistryKeys.ENTITY_TYPE))
+				.then(argument("type", new EntityTypeArgumentType(access))
 					.executes(client -> {
 						RegistryEntry.Reference<EntityType<?>> type = getRegistryEntry(client, "type", RegistryKeys.ENTITY_TYPE);
 
@@ -94,6 +95,13 @@ public class EntityMaskCommand {
 			return reference;
 		} else {
 			throw WRONG_TYPE_EXCEPTION.create(registryKey.getValue(), registryKey.getRegistry(), registryRef.getValue());
+		}
+	}
+
+	public static class EntityTypeArgumentType extends RegistryEntryArgumentType<EntityType<?>> {
+
+		protected EntityTypeArgumentType(CommandRegistryAccess registryAccess) {
+			super(registryAccess, RegistryKeys.ENTITY_TYPE, Registries.ENTITY_TYPE.getEntryCodec());
 		}
 	}
 }

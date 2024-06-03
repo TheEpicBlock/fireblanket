@@ -26,7 +26,7 @@ public class BERMaskCommand {
 	public static void init(LiteralArgumentBuilder<FabricClientCommandSource> base, CommandRegistryAccess access) {
 		base.then(literal("be")
 			.then(literal("add")
-				.then(argument("type", RegistryEntryArgumentType.registryEntry(access, RegistryKeys.BLOCK_ENTITY_TYPE))
+				.then(argument("type", new BlockEntityTypeArgumentType(access))
 					.executes(client -> {
 						RegistryEntry.Reference<BlockEntityType<?>> type = getRegistryEntry(client, "type", RegistryKeys.BLOCK_ENTITY_TYPE);
 
@@ -43,7 +43,7 @@ public class BERMaskCommand {
 				)
 			)
 			.then(literal("remove")
-				.then(argument("type", RegistryEntryArgumentType.registryEntry(access, RegistryKeys.BLOCK_ENTITY_TYPE))
+				.then(argument("type", new BlockEntityTypeArgumentType(access))
 					.executes(client -> {
 						RegistryEntry.Reference<BlockEntityType<?>> type = getRegistryEntry(client, "type", RegistryKeys.BLOCK_ENTITY_TYPE);
 
@@ -93,6 +93,12 @@ public class BERMaskCommand {
 			return reference;
 		} else {
 			throw WRONG_TYPE_EXCEPTION.create(registryKey.getValue(), registryKey.getRegistry(), registryRef.getValue());
+		}
+	}
+
+	public static class BlockEntityTypeArgumentType extends RegistryEntryArgumentType<BlockEntityType<?>> {
+		protected BlockEntityTypeArgumentType(CommandRegistryAccess registryAccess) {
+			super(registryAccess, RegistryKeys.BLOCK_ENTITY_TYPE, Registries.BLOCK_ENTITY_TYPE.getEntryCodec());
 		}
 	}
 }

@@ -52,10 +52,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
 public class Fireblanket implements ModInitializer {
-	public static final Identifier BATCHED_BE_UPDATE = new Identifier("fireblanket", "batched_be_sync");
-	public static final Identifier FULL_STREAM_COMPRESSION = new Identifier("fireblanket", "full_stream_compression");
-	public static final Identifier REGIONS_UPDATE = new Identifier("fireblanket", "regions_update");
-	public static final Identifier PLACE_COMMAND_BLOCK = new Identifier("fireblanket", "place_command_block");
+	public static final Identifier BATCHED_BE_UPDATE = Identifier.of("fireblanket", "batched_be_sync");
+	public static final Identifier FULL_STREAM_COMPRESSION = Identifier.of("fireblanket", "full_stream_compression");
+	public static final Identifier REGIONS_UPDATE = Identifier.of("fireblanket", "regions_update");
+	public static final Identifier PLACE_COMMAND_BLOCK = Identifier.of("fireblanket", "place_command_block");
 
 	public static final Logger LOGGER = LoggerFactory.getLogger("Fireblanket");
 	
@@ -126,8 +126,8 @@ public class Fireblanket implements ModInitializer {
 		
 		if (CAN_USE_ZSTD) {
 			LOGGER.info("Enabling full-stream compression");
-			ServerLoginConnectionEvents.QUERY_START.addPhaseOrdering(new Identifier("fireblanket:pre"), Event.DEFAULT_PHASE);
-			ServerLoginConnectionEvents.QUERY_START.register(new Identifier("fireblanket:pre"), (handler, server, sender, synchronizer) -> {
+			ServerLoginConnectionEvents.QUERY_START.addPhaseOrdering(Identifier.of("fireblanket:pre"), Event.DEFAULT_PHASE);
+			ServerLoginConnectionEvents.QUERY_START.register(Identifier.of("fireblanket:pre"), (handler, server, sender, synchronizer) -> {
 				if (!server.isSingleplayer()) {
 					sender.sendPacket(FULL_STREAM_COMPRESSION, PacketByteBufs.empty());
 				}

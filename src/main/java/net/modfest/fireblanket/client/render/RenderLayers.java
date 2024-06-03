@@ -48,7 +48,7 @@ public abstract class RenderLayers extends RenderLayer {
 		return RenderLayer.MultiPhaseParameters.builder()
 				.lightmap(ENABLE_LIGHTMAP)
 				.program(program)
-				.texture(new Texture(new Identifier("textures/misc/white.png"), false, false))
+				.texture(new Texture(Identifier.of("textures/misc/white.png"), false, false))
 				.transparency(TRANSLUCENT_TRANSPARENCY)
 				.target(TRANSLUCENT_TARGET)
 				.cull(RenderPhase.DISABLE_CULLING);

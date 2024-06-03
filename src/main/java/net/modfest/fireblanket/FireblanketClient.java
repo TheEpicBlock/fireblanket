@@ -25,6 +25,8 @@ import net.modfest.fireblanket.client.command.WireframeCommand;
 import net.modfest.fireblanket.client.screen.PlaceCommandBlockScreen;
 import net.modfest.fireblanket.mixin.accessor.ClientLoginNetworkHandlerAccessor;
 import net.modfest.fireblanket.mixinsupport.FSCConnection;
+import net.modfest.fireblanket.net.BEUpdate;
+import net.modfest.fireblanket.net.BatchedBEUpdatePayload;
 import net.modfest.fireblanket.world.render_regions.RegionSyncRequest;
 import net.modfest.fireblanket.world.render_regions.RenderRegions;
 
@@ -58,12 +60,10 @@ public class FireblanketClient implements ClientModInitializer {
 			}
 		});
 
-		ClientPlayNetworking.registerGlobalReceiver(Fireblanket.BATCHED_BE_UPDATE, (client, handler, buf, sender) -> {
-			int size = buf.readVarInt();
-
-			for (int i = 0; i < size; i++) {
-				BlockEntityUpdateS2CPacket fakePacket = new BlockEntityUpdateS2CPacket(buf);
-				client.execute(() -> handler.onBlockEntityUpdate(fakePacket));
+		ClientPlayNetworking.registerGlobalReceiver(BatchedBEUpdatePayload.ID, (payload, context) -> {
+			for (BEUpdate update : payload.updates()) {
+				BlockEntityUpdateS2CPacket fakePacket = new BlockEntityUpdateS2CPacket(update.pos(), update.type(), update.nbt());
+				context.client().execute(() -> context.client().getNetworkHandler().onBlockEntityUpdate(fakePacket));
 			}
 		});
 
