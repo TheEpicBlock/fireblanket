@@ -4,7 +4,6 @@
   "compatibilityLevel": "JAVA_17",
   "plugin": "net.modfest.fireblanket.FireblanketMixin",
   "mixins": [
-    "ChangeHowSleepTimeWorks",
     "accessor.BlockEntityTypeAccessor",
     "accessor.ClientConnectionAccessor",
     "accessor.EntityTypeAccessor",
