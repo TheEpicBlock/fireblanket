@@ -1,6 +1,8 @@
 package net.modfest.fireblanket.world.render_regions;
 
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.world.PersistentState;
 import net.modfest.fireblanket.Fireblanket;
@@ -11,9 +13,8 @@ public class RenderRegionsState extends PersistentState {
 	
 	public RenderRegionsState(ServerWorld world) {
 		this.regions = new RenderRegions(this::markDirty, req -> {
-			var pkt = req.toPacket(Fireblanket.REGIONS_UPDATE);
 			for (var player : world.getPlayers()) {
-				player.networkHandler.sendPacket(pkt);
+				ServerPlayNetworking.send(player, req);
 			}
 		});
 	}
@@ -22,7 +23,7 @@ public class RenderRegionsState extends PersistentState {
 		return world.getPersistentStateManager().getOrCreate(
 				new PersistentState.Type<>(
 						() -> new RenderRegionsState(world),
-						(nbt) -> readNbt(world, nbt),
+						(nbt, w) -> readNbt(world, nbt),
 						// Fabric API handles null datafix types
 						null
 				),
@@ -40,7 +41,7 @@ public class RenderRegionsState extends PersistentState {
 	}
 
 	@Override
-	public NbtCompound writeNbt(NbtCompound tag) {
+	public NbtCompound writeNbt(NbtCompound tag, RegistryWrapper.WrapperLookup wrapper) {
 		regions.writeNbt(tag);
 		return tag;
 	}

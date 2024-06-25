@@ -13,6 +13,7 @@ import net.minecraft.server.world.ChunkHolder;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
+import net.minecraft.world.chunk.AbstractChunkHolder;
 import net.minecraft.world.chunk.WorldChunk;
 import net.modfest.fireblanket.net.BEUpdate;
 import net.modfest.fireblanket.net.BatchedBEUpdatePayload;
@@ -31,14 +32,16 @@ import java.util.List;
 import java.util.Objects;
 
 @Mixin(ChunkHolder.class)
-public abstract class MixinChunkHolder {
+public abstract class MixinChunkHolder extends AbstractChunkHolder {
 	private static final List<BEUpdate> BATCHED_UPDATES = new ArrayList<>();
+
+	public MixinChunkHolder(ChunkPos pos) {
+		super(pos);
+	}
 
 	@Shadow protected abstract void sendBlockEntityUpdatePacket(List<ServerPlayerEntity> players, World world, BlockPos pos);
 
 	@Shadow protected abstract void sendPacketToPlayers(List<ServerPlayerEntity> players, Packet<?> packet);
-
-	@Shadow @Final private ChunkPos pos;
 
 	@Shadow @Final private ChunkHolder.PlayersWatchingChunkProvider playersWatchingChunkProvider;
 

@@ -18,7 +18,7 @@ import net.minecraft.world.World;
 public class MixinFlowerPotBlock {
 
 	@Inject(at=@At("HEAD"), method="onUse", cancellable=true)
-	public void fireblanket$noStealPotsInAdventure(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit,
+	public void fireblanket$noStealPotsInAdventure(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit,
 			CallbackInfoReturnable<ActionResult> ci) {
 		if (!player.canModifyBlocks()) {
 			ci.setReturnValue(ActionResult.FAIL);

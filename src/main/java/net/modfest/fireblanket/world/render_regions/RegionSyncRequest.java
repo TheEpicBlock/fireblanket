@@ -13,6 +13,8 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.entity.EntityType;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.RegistryByteBuf;
+import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.network.listener.ClientCommonPacketListener;
 import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.network.packet.Packet;
@@ -26,6 +28,12 @@ import net.modfest.fireblanket.world.render_regions.RegionSyncRequest.*;
 public sealed interface RegionSyncRequest extends CustomPayload permits InvalidCommand, FullState, Reset, AddRegion,
 		DestroyRegion, DetachAll, AttachEntity, AttachBlock, DetachEntity, DetachBlock, RedefineRegion, FullStateLegacy,
 		RegistryRegionSyncRequest {
+
+	CustomPayload.Id<RegionSyncRequest> ID = new CustomPayload.Id<>(Fireblanket.REGIONS_UPDATE);
+
+	PacketCodec<RegistryByteBuf, RegionSyncRequest> CODEC = PacketCodec.of(
+			RegionSyncRequest::toPacket, RegionSyncRequest::read
+	);
 
 	public enum RequestType {
 		INVALID_COMMAND(InvalidCommand::read, "invalid_command"),
@@ -85,21 +93,14 @@ public sealed interface RegionSyncRequest extends CustomPayload permits InvalidC
 		}
 	}
 
-	default void write(PacketByteBuf buf, Identifier packetId) {
+	default void toPacket(RegistryByteBuf buf) {
 		buf.writeByte(type().ordinal());
 		write(buf);
 	}
 
-	default Packet<ClientCommonPacketListener> toPacket(Identifier id) {
-		PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
-		write(buf, id);
-
-		return ServerPlayNetworking.createS2CPacket(this);
-	}
-
 	@Override
 	default Id<? extends CustomPayload> getId() {
-		return new Id<RegionSyncRequest>(this.type().id);
+		return ID;
 	}
 
 	private static void writeRegion(PacketByteBuf buf, RenderRegion r) {
@@ -128,7 +129,7 @@ public sealed interface RegionSyncRequest extends CustomPayload permits InvalidC
 		buf.writeVarInt(registry.getRawId(registry.get(id)));
 	}
 	
-	static RegionSyncRequest read(PacketByteBuf buf) {
+	static RegionSyncRequest read(RegistryByteBuf buf) {
 		int tid = buf.readUnsignedByte();
 		if (tid >= RequestType.VALUES.size()) {
 			Fireblanket.LOGGER.warn("Unknown region sync command id "+tid);
@@ -321,7 +322,6 @@ public sealed interface RegionSyncRequest extends CustomPayload permits InvalidC
 		public void apply(RenderRegions tgt) {
 			tgt.detachAll(tgt.getByName(name));
 		}
-		
 	}
 	
 	public record AttachEntity(String name, UUID entity) implements RegionSyncRequest {

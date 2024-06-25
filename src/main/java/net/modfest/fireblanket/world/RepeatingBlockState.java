@@ -4,6 +4,7 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtHelper;
 import net.minecraft.nbt.NbtList;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.world.PersistentState;
 
 import java.util.HashSet;
@@ -15,7 +16,7 @@ public class RepeatingBlockState extends PersistentState {
 
 
 	@Override
-	public NbtCompound writeNbt(NbtCompound nbt) {
+	public NbtCompound writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup wrapper) {
 		NbtList list = new NbtList();
 
 		for (UUID uuid : this.uuids) {
@@ -26,7 +27,7 @@ public class RepeatingBlockState extends PersistentState {
 		return nbt;
 	}
 
-	public static RepeatingBlockState readNbt(NbtCompound nbt) {
+	public static RepeatingBlockState readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup wrapper) {
 		NbtList ids = nbt.getList("Ids", NbtElement.INT_ARRAY_TYPE);
 		RepeatingBlockState st = new RepeatingBlockState();
 

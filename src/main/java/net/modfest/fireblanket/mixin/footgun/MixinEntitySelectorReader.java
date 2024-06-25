@@ -45,7 +45,7 @@ public class MixinEntitySelectorReader implements ForceableArgument {
 	}
 
 	@Inject(method = "read", at = @At("RETURN"))
-	private void preventFootgun(CallbackInfoReturnable<EntitySelector> info) throws CommandSyntaxException {
+	private void fireblanket$preventFootgun(CallbackInfoReturnable<EntitySelector> info) throws CommandSyntaxException {
 		if (this.includesNonPlayers
 				//main anti-footgun: don't allow someone to affect every single entity on the server at once
 				&& (this.limit > 50  && this.distance == NumberRange.DoubleRange.ANY)
@@ -55,8 +55,8 @@ public class MixinEntitySelectorReader implements ForceableArgument {
 		}
 	}
 
-	@Inject(method = "setPredicate", at = @At("HEAD"))
-	private void forceWithPredicate(Predicate<Entity> predicate, CallbackInfo info) {
+	@Inject(method = "addPredicate", at = @At("HEAD"))
+	private void fireblanket$forceWithPredicate(Predicate<Entity> predicate, CallbackInfo info) {
 		//predicates are a Limiting Factor so it should be good if anything sets them
 		this.forced = true;
 	}

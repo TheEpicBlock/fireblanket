@@ -26,4 +26,12 @@ public class MixinShaderProgram {
 	private void fireblanket$injectBetterMap(ResourceFactory factory, String name, VertexFormat format, CallbackInfo ci) {
 		this.samplers = new Object2ObjectOpenHashMap<>(4);
 	}
+
+	// TODO: Why does this exist?
+	@Redirect(method = "initializeUniforms", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gl/ShaderProgram;addSampler(Ljava/lang/String;Ljava/lang/Object;)V"))
+	private void fireblanket$optimizeVBODraw(ShaderProgram instance, String name, Object sampler) {
+		if (((Integer)sampler) != 0) {
+			instance.addSampler(name, sampler);
+		}
+	}
 }

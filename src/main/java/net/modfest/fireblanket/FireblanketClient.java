@@ -27,6 +27,7 @@ import net.modfest.fireblanket.mixin.accessor.ClientLoginNetworkHandlerAccessor;
 import net.modfest.fireblanket.mixinsupport.FSCConnection;
 import net.modfest.fireblanket.net.BEUpdate;
 import net.modfest.fireblanket.net.BatchedBEUpdatePayload;
+import net.modfest.fireblanket.net.CommandBlockPacket;
 import net.modfest.fireblanket.world.render_regions.RegionSyncRequest;
 import net.modfest.fireblanket.world.render_regions.RenderRegions;
 
@@ -67,17 +68,16 @@ public class FireblanketClient implements ClientModInitializer {
 			}
 		});
 
-		ClientPlayNetworking.registerGlobalReceiver(Fireblanket.REGIONS_UPDATE, (client, handler, buf, sender) -> {
-			RegionSyncRequest command = RegionSyncRequest.read(buf);
-			if (command.valid()) {
-				client.send(() -> {
-					command.apply(renderRegions);
+		ClientPlayNetworking.registerGlobalReceiver(RegionSyncRequest.ID, (payload, ctx) -> {
+			if (payload.valid()) {
+				ctx.client().send(() -> {
+					payload.apply(renderRegions);
 				});
 			}
 		});
 
-		ClientPlayNetworking.registerGlobalReceiver(Fireblanket.PLACE_COMMAND_BLOCK, (client, handler, buf, sender) -> {
-			client.execute(() -> MinecraftClient.getInstance().setScreen(new PlaceCommandBlockScreen()));
+		ClientPlayNetworking.registerGlobalReceiver(CommandBlockPacket.ID, (payload, ctx) -> {
+			ctx.client().execute(() -> MinecraftClient.getInstance().setScreen(new PlaceCommandBlockScreen()));
 		});
 		
 		ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {

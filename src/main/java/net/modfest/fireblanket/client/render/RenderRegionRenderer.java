@@ -63,11 +63,16 @@ public final class RenderRegionRenderer {
 
 			String name = "[" + rr.mode().name().toLowerCase(Locale.ROOT) + "] " + e.getKey();
 
+			matrices.push();
+			matrices.loadIdentity();
+
 			DebugRenderer.drawString(matrices, imm, name,
 					rr.minX() + (rr.maxX() - rr.minX()) / 2.0 + 0.5,
 					rr.minY() + (rr.maxY() - rr.minY()) / 2.0 + 0.5,
 					rr.minZ() + (rr.maxZ() - rr.minZ()) / 2.0 + 0.5,
 					0xFFFFFF, 0.03F);
+
+			matrices.pop();
 		}
 
 		RenderSystem.lineWidth(oldLw);

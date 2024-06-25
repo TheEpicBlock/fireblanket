@@ -14,7 +14,7 @@ public class TickTimeCommand {
 		base.then(literal("ticktimes")
 			.executes(cl -> {
 				if (!ClientState.displayTickTimes) {
-					cl.getSource().sendFeedback(Text.literal("Displaying tick-times in world. WARNING: Tick times are influenced by a myriad of factors and require expert results to analyze!"));
+					cl.getSource().sendFeedback(Text.literal("Displaying tick-times in world. WARNING: Tick times are influenced by a myriad of factors and require expert knowledge to analyze!"));
 					MinecraftClient.getInstance().submit(() -> ClientState.displayTickTimes = true);
 				} else {
 					MinecraftClient.getInstance().submit(() -> ClientState.displayTickTimes = false);

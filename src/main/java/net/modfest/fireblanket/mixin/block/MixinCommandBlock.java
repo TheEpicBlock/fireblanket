@@ -7,11 +7,13 @@ import net.minecraft.block.BlockWithEntity;
 import net.minecraft.block.CommandBlock;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.modfest.fireblanket.Fireblanket;
+import net.modfest.fireblanket.net.CommandBlockPacket;
 import net.modfest.fireblanket.world.RepeatingBlockState;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
@@ -30,7 +32,7 @@ public abstract class MixinCommandBlock extends BlockWithEntity {
 
 			if (st.add(player.getUuid())) {
 				st.markDirty();
-				ServerPlayNetworking.send(player, Fireblanket.PLACE_COMMAND_BLOCK, PacketByteBufs.empty());
+				ServerPlayNetworking.send(player, CommandBlockPacket.INST);
 			}
 		}
 	}

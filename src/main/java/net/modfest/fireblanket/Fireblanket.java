@@ -8,12 +8,15 @@ import net.fabricmc.fabric.api.entity.event.v1.ServerEntityWorldChangeEvents;
 import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
+import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerLoginConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerLoginNetworking;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.network.ClientConnection;
 import net.minecraft.network.PacketCallbacks;
+import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.block.Block;
 import net.minecraft.registry.Registries;
@@ -30,6 +33,8 @@ import net.modfest.fireblanket.command.RegionCommand;
 import net.modfest.fireblanket.compat.PolyMcCompat;
 import net.modfest.fireblanket.mixin.accessor.ClientConnectionAccessor;
 import net.modfest.fireblanket.mixin.accessor.ServerChunkManagerAccessor;
+import net.modfest.fireblanket.net.BatchedBEUpdatePayload;
+import net.modfest.fireblanket.net.CommandBlockPacket;
 import net.modfest.fireblanket.world.blocks.UpdateSignBlockEntityTypes;
 import net.modfest.fireblanket.mixin.accessor.ServerLoginNetworkHandlerAccessor;
 import net.modfest.fireblanket.mixinsupport.FSCConnection;
@@ -55,7 +60,6 @@ public class Fireblanket implements ModInitializer {
 	public static final Identifier BATCHED_BE_UPDATE = Identifier.of("fireblanket", "batched_be_sync");
 	public static final Identifier FULL_STREAM_COMPRESSION = Identifier.of("fireblanket", "full_stream_compression");
 	public static final Identifier REGIONS_UPDATE = Identifier.of("fireblanket", "regions_update");
-	public static final Identifier PLACE_COMMAND_BLOCK = Identifier.of("fireblanket", "place_command_block");
 
 	public static final Logger LOGGER = LoggerFactory.getLogger("Fireblanket");
 	
@@ -123,7 +127,12 @@ public class Fireblanket implements ModInitializer {
 			CAN_USE_ZSTD = false;
 			LOGGER.warn("Could not load zstd, full-stream compression unavailable", e);
 		}
-		
+
+		// Networking
+		PayloadTypeRegistry.playS2C().register(BatchedBEUpdatePayload.ID, BatchedBEUpdatePayload.CODEC);
+		PayloadTypeRegistry.playS2C().register(CommandBlockPacket.ID, CommandBlockPacket.CODEC);
+		PayloadTypeRegistry.playS2C().register(RegionSyncRequest.ID, RegionSyncRequest.CODEC);
+
 		if (CAN_USE_ZSTD) {
 			LOGGER.info("Enabling full-stream compression");
 			ServerLoginConnectionEvents.QUERY_START.addPhaseOrdering(Identifier.of("fireblanket:pre"), Event.DEFAULT_PHASE);
@@ -192,7 +201,7 @@ public class Fireblanket implements ModInitializer {
 		} else {
 			req = regions.toPacket();
 		}
-		sender.accept(req.toPacket(REGIONS_UPDATE));
+		sender.accept(ServerPlayNetworking.createS2CPacket(req));
 	}
 
 	public static LinkedBlockingQueue<QueuedPacket> getNextQueue() {

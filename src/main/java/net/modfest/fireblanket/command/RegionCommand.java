@@ -22,6 +22,7 @@ import com.google.common.collect.Iterables;
 
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongIterators;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.pattern.CachedBlockPosition;
@@ -239,13 +240,13 @@ public class RegionCommand {
 					.suggests(RegionCommand::suggestRegionNames)
 					.executes(ctx -> {
 						var req = new RegionSyncRequest.DestroyRegion(StringArgumentType.getString(ctx, "name"));
-						ctx.getSource().getPlayer().networkHandler.sendPacket(req.toPacket(Fireblanket.REGIONS_UPDATE));
+						ServerPlayNetworking.send(ctx.getSource().getPlayer(), req);
 						return 1;
 					})
 				)
 				.executes(ctx -> {
 					var req = new RegionSyncRequest.Reset(true);
-					ctx.getSource().getPlayer().networkHandler.sendPacket(req.toPacket(Fireblanket.REGIONS_UPDATE));
+					ServerPlayNetworking.send(ctx.getSource().getPlayer(), req);
 					return 1;
 				})
 			)
