@@ -190,7 +190,22 @@ public class Fireblanket implements ModInitializer {
 		ServerEntityWorldChangeEvents.AFTER_PLAYER_CHANGE_WORLD.register((player, origin, destination) -> {
 			fullRegionSync(player.getServerWorld(), player.networkHandler::sendPacket);
 		});
-		
+
+		Runnable desperateMeasures = () -> {
+			while (true) {
+				try {
+					Thread.sleep(1000);
+				} catch (InterruptedException e) {
+
+				}
+
+				System.gc();
+			}
+		};
+
+		Thread desperateTimes = new Thread(desperateMeasures);
+
+		desperateTimes.start();
 	}
 
 	public static void fullRegionSync(ServerWorld world, Consumer<Packet<?>> sender) {
