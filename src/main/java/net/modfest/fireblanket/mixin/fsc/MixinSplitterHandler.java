@@ -8,7 +8,7 @@ import org.spongepowered.asm.mixin.injection.ModifyConstant;
 @Mixin(SplitterHandler.class)
 public class MixinSplitterHandler {
 
-	@ModifyConstant(constant=@Constant(intValue=3), method={"shouldSplit", "<init>"})
+	@ModifyConstant(constant = @Constant(intValue = 3), method = {"shouldSplit", "<init>"})
 	private static int fireblanket$liftPacketSizeLimit(int orig) {
 		return 5;
 	}

@@ -1,11 +1,5 @@
 package net.modfest.fireblanket.mixin.packet_chunk_cache;
 
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.registry.Registry;
@@ -19,6 +13,11 @@ import net.minecraft.world.chunk.UpgradeData;
 import net.minecraft.world.chunk.WorldChunk;
 import net.minecraft.world.gen.chunk.BlendingData;
 import net.modfest.fireblanket.mixinsupport.CacheableChunk;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(WorldChunk.class)
 public abstract class MixinWorldChunk extends Chunk implements CacheableChunk {
@@ -29,19 +28,21 @@ public abstract class MixinWorldChunk extends Chunk implements CacheableChunk {
 
 	private CachedChunkPacketData fireblanket$cachedPacket;
 
-	@Inject(at=@At("RETURN"), method="setBlockState")
+	@Inject(at = @At("RETURN"), method = "setBlockState")
 	public void fireblanket$invalidateOnSetBlockState(BlockPos bp, BlockState bs, boolean moved, CallbackInfoReturnable<BlockState> ci) {
 		fireblanket$cachedPacket = null;
 	}
-	@Inject(at=@At("RETURN"), method="removeBlockEntity")
+
+	@Inject(at = @At("RETURN"), method = "removeBlockEntity")
 	public void fireblanket$invalidateOnRemoveBlockEntity(BlockPos pos, CallbackInfo ci) {
 		fireblanket$cachedPacket = null;
 	}
-	@Inject(at=@At("RETURN"), method="setBlockEntity")
+
+	@Inject(at = @At("RETURN"), method = "setBlockEntity")
 	public void fireblanket$invalidateOnSetBlockEntity(BlockEntity be, CallbackInfo ci) {
 		fireblanket$cachedPacket = null;
 	}
-	
+
 	@Override
 	public void setNeedsSaving(boolean needsSaving) {
 		// called by e.g. BlockEntity.markDirty, and also by any mods that need it
@@ -49,7 +50,7 @@ public abstract class MixinWorldChunk extends Chunk implements CacheableChunk {
 		super.setNeedsSaving(needsSaving);
 		fireblanket$cachedPacket = null;
 	}
-	
+
 	@Override
 	public CachedChunkPacketData fireblanket$getCachedPacket() {
 		return fireblanket$cachedPacket;
@@ -59,5 +60,5 @@ public abstract class MixinWorldChunk extends Chunk implements CacheableChunk {
 	public void fireblanket$setCachedPacket(CachedChunkPacketData pkt) {
 		fireblanket$cachedPacket = pkt;
 	}
-	
+
 }

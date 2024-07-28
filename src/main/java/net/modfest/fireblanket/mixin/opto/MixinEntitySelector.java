@@ -27,31 +27,52 @@ import java.util.function.Predicate;
 
 @Mixin(EntitySelector.class)
 public abstract class MixinEntitySelector {
-	@Shadow protected abstract void checkSourcePermission(ServerCommandSource source) throws CommandSyntaxException;
+	@Shadow
+	protected abstract void checkSourcePermission(ServerCommandSource source) throws CommandSyntaxException;
 
-	@Shadow @Final private @Nullable String playerName;
+	@Shadow
+	@Final
+	private @Nullable String playerName;
 
-	@Shadow @Final private @Nullable UUID uuid;
+	@Shadow
+	@Final
+	private @Nullable UUID uuid;
 
-	@Shadow @Final private Function<Vec3d, Vec3d> positionOffset;
+	@Shadow
+	@Final
+	private Function<Vec3d, Vec3d> positionOffset;
 
-	@Shadow protected abstract Predicate<Entity> getPositionPredicate(Vec3d pos, @Nullable Box box, @Nullable FeatureSet enabledFeatures);
+	@Shadow
+	protected abstract Predicate<Entity> getPositionPredicate(Vec3d pos, @Nullable Box box, @Nullable FeatureSet enabledFeatures);
 
-	@Shadow @Final private boolean senderOnly;
+	@Shadow
+	@Final
+	private boolean senderOnly;
 
-	@Shadow protected abstract int getAppendLimit();
+	@Shadow
+	protected abstract int getAppendLimit();
 
-	@Shadow public abstract boolean isLocalWorldOnly();
+	@Shadow
+	public abstract boolean isLocalWorldOnly();
 
-	@Shadow protected abstract <T extends Entity> List<T> getEntities(Vec3d pos, List<T> entities);
+	@Shadow
+	protected abstract <T extends Entity> List<T> getEntities(Vec3d pos, List<T> entities);
 
-	@Shadow @Final private NumberRange.DoubleRange distance;
+	@Shadow
+	@Final
+	private NumberRange.DoubleRange distance;
 
-	@Shadow @Final private @Nullable Box box;
+	@Shadow
+	@Final
+	private @Nullable Box box;
 
-	@Shadow @Nullable protected abstract Box getOffsetBox(Vec3d offset);
+	@Shadow
+	@Nullable
+	protected abstract Box getOffsetBox(Vec3d offset);
 
-	@Shadow @Final private List<Predicate<Entity>> predicates;
+	@Shadow
+	@Final
+	private List<Predicate<Entity>> predicates;
 
 	/**
 	 * @author Jasmine
@@ -62,10 +83,10 @@ public abstract class MixinEntitySelector {
 		this.checkSourcePermission(source);
 		if (this.playerName != null) {
 			ServerPlayerEntity serverPlayerEntity = source.getServer().getPlayerManager().getPlayer(this.playerName);
-			return serverPlayerEntity == null ? Collections.emptyList() : Lists.<ServerPlayerEntity>newArrayList(serverPlayerEntity);
+			return serverPlayerEntity == null ? Collections.emptyList() : Lists.newArrayList(serverPlayerEntity);
 		} else if (this.uuid != null) {
 			ServerPlayerEntity serverPlayerEntity = source.getServer().getPlayerManager().getPlayer(this.uuid);
-			return serverPlayerEntity == null ? Collections.emptyList() : Lists.<ServerPlayerEntity>newArrayList(serverPlayerEntity);
+			return serverPlayerEntity == null ? Collections.emptyList() : Lists.newArrayList(serverPlayerEntity);
 		} else {
 			Vec3d pos = this.positionOffset.apply(source.getPosition());
 			Box box = this.getOffsetBox(pos);
@@ -90,7 +111,7 @@ public abstract class MixinEntitySelector {
 				} else {
 					list = Lists.newArrayList();
 
-					for(ServerPlayerEntity serverPlayerEntity3 : source.getServer().getPlayerManager().getPlayerList()) {
+					for (ServerPlayerEntity serverPlayerEntity3 : source.getServer().getPlayerManager().getPlayerList()) {
 						if (predicate.test(serverPlayerEntity3)) {
 							list.add(serverPlayerEntity3);
 							if (list.size() >= i) {

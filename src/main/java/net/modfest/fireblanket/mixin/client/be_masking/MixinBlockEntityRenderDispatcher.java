@@ -5,7 +5,6 @@ import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.block.entity.BlockEntityRenderDispatcher;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.registry.Registries;
 import net.modfest.fireblanket.client.ClientState;
 import net.modfest.fireblanket.client.render.QuadEmitter;
 import net.modfest.fireblanket.client.render.RenderLayers;

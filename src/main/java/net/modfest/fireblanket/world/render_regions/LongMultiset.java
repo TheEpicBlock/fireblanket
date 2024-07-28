@@ -1,10 +1,6 @@
 package net.modfest.fireblanket.world.render_regions;
 
-import java.util.Collection;
-import java.util.Set;
-
 import com.google.common.collect.Multiset;
-
 import it.unimi.dsi.fastutil.longs.AbstractLongIterator;
 import it.unimi.dsi.fastutil.longs.Long2IntArrayMap;
 import it.unimi.dsi.fastutil.longs.Long2IntMap;
@@ -17,19 +13,23 @@ import it.unimi.dsi.fastutil.objects.AbstractObjectSet;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 
+import java.util.Collection;
+import java.util.Set;
+
 public class LongMultiset implements Multiset<Long> {
 
 	public interface Entry extends Multiset.Entry<Long> {
-		
-		@Override @Deprecated
+
+		@Override
+		@Deprecated
 		default Long getElement() {
 			return getLongElement();
 		}
-		
+
 		long getLongElement();
-		
+
 	}
-	
+
 	private final Long2IntMap underlying = new Long2IntOpenHashMap();
 
 	@Override
@@ -47,7 +47,8 @@ public class LongMultiset implements Multiset<Long> {
 		return null;
 	}
 
-	@Override @Deprecated
+	@Override
+	@Deprecated
 	public boolean addAll(Collection<? extends Long> c) {
 		for (Long l : c) {
 			add(l);
@@ -69,7 +70,8 @@ public class LongMultiset implements Multiset<Long> {
 		return count;
 	}
 
-	@Override @Deprecated
+	@Override
+	@Deprecated
 	public int count(Object element) {
 		if (element instanceof Long l) return count(l.longValue());
 		return 0;
@@ -79,23 +81,25 @@ public class LongMultiset implements Multiset<Long> {
 		return underlying.get(element);
 	}
 
-	@Override @Deprecated
+	@Override
+	@Deprecated
 	public int add(Long element, int occurrences) {
 		return add(element.longValue(), occurrences);
 	}
 
-	@Override @Deprecated
+	@Override
+	@Deprecated
 	public boolean add(Long element) {
 		return add(element.longValue());
 	}
-	
+
 	public int add(long element, int occurences) {
-		if (occurences < 0) throw new IllegalArgumentException("occurences cannot be negative ("+occurences+")");
+		if (occurences < 0) throw new IllegalArgumentException("occurences cannot be negative (" + occurences + ")");
 		int old = underlying.get(element);
 		if (occurences == 0) return old;
-		int count = old+occurences;
+		int count = old + occurences;
 		if (count < 0) {
-			throw new IllegalArgumentException("overflow (adding "+occurences+" to "+old+")");
+			throw new IllegalArgumentException("overflow (adding " + occurences + " to " + old + ")");
 		} else if (count == 0) {
 			underlying.remove(element);
 		} else {
@@ -103,28 +107,30 @@ public class LongMultiset implements Multiset<Long> {
 		}
 		return old;
 	}
-	
+
 	public boolean add(long element) {
 		add(element, 1);
 		return true;
 	}
 
-	@Override @Deprecated
+	@Override
+	@Deprecated
 	public int remove(Object element, int occurrences) {
 		if (element instanceof Long l) return remove(l.longValue(), occurrences);
 		return 0;
 	}
 
-	@Override @Deprecated
+	@Override
+	@Deprecated
 	public boolean remove(Object element) {
 		if (element instanceof Long l) return remove(l.longValue());
 		return false;
 	}
-	
+
 	public boolean remove(long element) {
 		int old = underlying.get(element);
 		if (old == 0) return false;
-		int count = old-1;
+		int count = old - 1;
 		if (count == 0) {
 			underlying.remove(element);
 		} else {
@@ -132,12 +138,12 @@ public class LongMultiset implements Multiset<Long> {
 		}
 		return true;
 	}
-	
+
 	public int remove(long element, int occurences) {
-		if (occurences < 0) throw new IllegalArgumentException("occurences cannot be negative ("+occurences+")");
+		if (occurences < 0) throw new IllegalArgumentException("occurences cannot be negative (" + occurences + ")");
 		int old = underlying.get(element);
 		if (occurences == 0) return old;
-		int count = old-occurences;
+		int count = old - occurences;
 		if (count <= 0) {
 			underlying.remove(element);
 		} else {
@@ -146,16 +152,18 @@ public class LongMultiset implements Multiset<Long> {
 		return old;
 	}
 
-	@Override @Deprecated
+	@Override
+	@Deprecated
 	public int setCount(Long element, int count) {
 		return setCount(element.longValue(), count);
 	}
 
-	@Override @Deprecated
+	@Override
+	@Deprecated
 	public boolean setCount(Long element, int oldCount, int newCount) {
 		return setCount(element.longValue(), oldCount, newCount);
 	}
-	
+
 	public int setCount(long element, int count) {
 		return underlying.put(element, count);
 	}
@@ -173,11 +181,12 @@ public class LongMultiset implements Multiset<Long> {
 		return underlying.keySet();
 	}
 
-	@Override @Deprecated
+	@Override
+	@Deprecated
 	public Set<Multiset.Entry<Long>> entrySet() {
-		return (Set)longEntrySet();
+		return (Set) longEntrySet();
 	}
-	
+
 	public ObjectSet<Entry> longEntrySet() {
 		return new AbstractObjectSet<LongMultiset.Entry>() {
 
@@ -214,12 +223,12 @@ public class LongMultiset implements Multiset<Long> {
 					public Entry next() {
 						Long2IntMap.Entry en = entries.next();
 						return new Entry() {
-							
+
 							@Override
 							public int getCount() {
 								return en.getIntValue();
 							}
-							
+
 							@Override
 							public long getLongElement() {
 								return en.getLongKey();
@@ -235,15 +244,15 @@ public class LongMultiset implements Multiset<Long> {
 	public LongIterator iterator() {
 		return new AbstractLongIterator() {
 			private final ObjectIterator<Long2IntMap.Entry> entries = underlying.long2IntEntrySet().iterator();
-			
+
 			private long element;
 			private int count;
-			
+
 			@Override
 			public boolean hasNext() {
 				return count > 0 || entries.hasNext();
 			}
-			
+
 			@Override
 			public long nextLong() {
 				if (count <= 0) {
@@ -257,17 +266,19 @@ public class LongMultiset implements Multiset<Long> {
 		};
 	}
 
-	@Override @Deprecated
+	@Override
+	@Deprecated
 	public boolean contains(Object element) {
 		if (element instanceof Long l) return underlying.containsKey(l);
 		return false;
 	}
-	
+
 	public boolean contains(long element) {
 		return underlying.containsKey(element);
 	}
 
-	@Override @Deprecated
+	@Override
+	@Deprecated
 	public boolean containsAll(Collection<?> elements) {
 		for (Object o : elements) {
 			if (!contains(o)) return false;
@@ -275,7 +286,8 @@ public class LongMultiset implements Multiset<Long> {
 		return true;
 	}
 
-	@Override @Deprecated
+	@Override
+	@Deprecated
 	public boolean removeAll(Collection<?> c) {
 		boolean b = false;
 		for (Object o : c) {
@@ -284,7 +296,8 @@ public class LongMultiset implements Multiset<Long> {
 		return b;
 	}
 
-	@Override @Deprecated
+	@Override
+	@Deprecated
 	public boolean retainAll(Collection<?> c) {
 		Long2IntMap keep = new Long2IntArrayMap();
 		for (Object o : c) {
@@ -321,5 +334,5 @@ public class LongMultiset implements Multiset<Long> {
 		underlying.putAll(keep);
 		return true;
 	}
-	
+
 }

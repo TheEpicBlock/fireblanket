@@ -25,7 +25,7 @@ public class EntityTick {
 			double y = e.getY() + (e.serverY - e.getY()) / e.bodyTrackingIncrements;
 			double z = e.getZ() + (e.serverZ - e.getZ()) / e.bodyTrackingIncrements;
 			double yaw = MathHelper.wrapDegrees(e.serverYaw - e.getYaw());
-			e.setYaw(e.getYaw() + (float)yaw / e.bodyTrackingIncrements);
+			e.setYaw(e.getYaw() + (float) yaw / e.bodyTrackingIncrements);
 			e.setPitch((float) (e.getPitch() + (e.serverPitch - e.getPitch()) / e.bodyTrackingIncrements));
 			e.bodyYaw = e.getYaw();
 			--e.bodyTrackingIncrements;
@@ -33,7 +33,7 @@ public class EntityTick {
 		}
 
 		if (e.headTrackingIncrements > 0) {
-			e.headYaw += (float)MathHelper.wrapDegrees(e.serverHeadYaw - (double)e.headYaw) / (float)e.headTrackingIncrements;
+			e.headYaw += (float) MathHelper.wrapDegrees(e.serverHeadYaw - (double) e.headYaw) / (float) e.headTrackingIncrements;
 			--e.headTrackingIncrements;
 		}
 	}

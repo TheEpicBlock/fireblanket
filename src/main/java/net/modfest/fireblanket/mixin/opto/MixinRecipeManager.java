@@ -1,20 +1,7 @@
 package net.modfest.fireblanket.mixin.opto;
 
-import java.util.List;
-import java.util.Optional;
-
-import net.minecraft.recipe.RecipeEntry;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-
-import net.minecraft.inventory.Inventory;
 import net.minecraft.recipe.RecipeManager;
-import net.minecraft.recipe.RecipeType;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.collection.DefaultedList;
-import net.minecraft.world.World;
+import org.spongepowered.asm.mixin.Mixin;
 
 @Mixin(RecipeManager.class)
 public class MixinRecipeManager {
@@ -62,5 +49,5 @@ public class MixinRecipeManager {
 //			ci.setReturnValue(DefaultedList.of());
 //		}
 //	}
-	
+
 }

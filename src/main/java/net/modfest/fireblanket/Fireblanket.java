@@ -63,18 +63,19 @@ public class Fireblanket implements ModInitializer {
 	public static final Identifier REGIONS_UPDATE = Identifier.of("fireblanket", "regions_update");
 
 	public static final Logger LOGGER = LoggerFactory.getLogger("Fireblanket");
-	
-	public record QueuedPacket(ClientConnection conn, Packet<?> packet, PacketCallbacks listener) {}
-	
+
+	public record QueuedPacket(ClientConnection conn, Packet<?> packet, PacketCallbacks listener) {
+	}
+
 	private static final AtomicInteger nextQueue = new AtomicInteger();
-	
+
 	@SuppressWarnings("unchecked")
 	public static final LinkedBlockingQueue<QueuedPacket>[] PACKET_QUEUES = new LinkedBlockingQueue[4];
-	
+
 	public static boolean CAN_USE_ZSTD = false;
-	
+
 	public static final ChunkTicketType<ChunkPos> KEEP_LOADED = ChunkTicketType.create("fireblanket:keep_loaded", ChunkTicketType.FORCED.getArgumentComparator());
-	
+
 	@Override
 	public void onInitialize() {
 		CommandRegistrationCallback.EVENT.register((dispatcher, access, environment) -> {
@@ -83,7 +84,7 @@ public class Fireblanket implements ModInitializer {
 			RegionCommand.init(base, access);
 			CmdFindReplaceCommand.init(base, access);
 			dispatcher.register(CommandManager.literal("fb")
-					.redirect(dispatcher.register(base)));
+				.redirect(dispatcher.register(base)));
 		});
 
 		for (Block block : Registries.BLOCK) {
@@ -102,7 +103,7 @@ public class Fireblanket implements ModInitializer {
 				EntityFilters.parse(types);
 			}
 		}
-		
+
 		for (int i = 0; i < PACKET_QUEUES.length; i++) {
 			LinkedBlockingQueue<QueuedPacket> q = new LinkedBlockingQueue<>();
 			PACKET_QUEUES[i] = q;
@@ -110,16 +111,16 @@ public class Fireblanket implements ModInitializer {
 				while (true) {
 					try {
 						QueuedPacket p = q.take();
-						((ClientConnectionAccessor)p.conn()).fireblanket$sendImmediately(p.packet(), p.listener(), true);
+						((ClientConnectionAccessor) p.conn()).fireblanket$sendImmediately(p.packet(), p.listener(), true);
 					} catch (Throwable t) {
 						LOGGER.error("Exception in packet thread", t);
 					}
 				}
-			}, "Fireblanket async packet send thread #"+(i+1));
+			}, "Fireblanket async packet send thread #" + (i + 1));
 			thread.setDaemon(true);
 			thread.start();
 		}
-		
+
 		try {
 			// TODO: ZSTD compression does not work with 1.20.2+ packet handling
 //			Native.load();
@@ -143,26 +144,26 @@ public class Fireblanket implements ModInitializer {
 				}
 			});
 		}
-		
+
 		ServerLoginNetworking.registerGlobalReceiver(FULL_STREAM_COMPRESSION, (server, handler, understood, buf, synchronizer, responseSender) -> {
 			if (understood) {
-				((FSCConnection)((ServerLoginNetworkHandlerAccessor)handler).fireblanket$getConnection()).fireblanket$enableFullStreamCompression();
+				((FSCConnection) ((ServerLoginNetworkHandlerAccessor) handler).fireblanket$getConnection()).fireblanket$enableFullStreamCompression();
 			}
 		});
-		
+
 		if (FabricLoader.getInstance().isModLoaded("polymc")) {
 			PolyMcCompat.init();
 		}
-		
+
 		ServerWorldEvents.LOAD.register((server, world) -> {
 			if (System.getProperty("fireblanket.loadRadius") != null) {
 				if (!world.getRegistryKey().getValue().toString().equals("minecraft:overworld")) return;
 				int radius = Integer.getInteger("fireblanket.loadRadius");
-				int min = (int)Math.floor(-radius/16);
-				int max = (int)Math.ceil(radius/16);
-				int count = (max-min)*(max-min);
-				ChunkTicketManager mgr = ((ServerChunkManagerAccessor)world.getChunkManager()).fireblanket$getTicketManager();
-				LOGGER.info("Forcing "+count+" chunks to stay loaded (but not ticking)...");
+				int min = (int) Math.floor(-radius / 16);
+				int max = (int) Math.ceil(radius / 16);
+				int count = (max - min) * (max - min);
+				ChunkTicketManager mgr = ((ServerChunkManagerAccessor) world.getChunkManager()).fireblanket$getTicketManager();
+				LOGGER.info("Forcing " + count + " chunks to stay loaded (but not ticking)...");
 				int done = 0;
 				long lastReport = System.nanoTime();
 				Stopwatch sw = Stopwatch.createStarted();
@@ -174,20 +175,20 @@ public class Fireblanket implements ModInitializer {
 						// one above FULL; out of range, but not so far to unload
 						mgr.addTicketWithLevel(KEEP_LOADED, pos, 34, pos);
 						done++;
-						if (System.nanoTime()-lastReport > 1_000_000_000) {
+						if (System.nanoTime() - lastReport > 1_000_000_000) {
 							lastReport = System.nanoTime();
-							LOGGER.info(done+"/"+count+" loaded ("+((done*100)/count)+"%)...");
+							LOGGER.info(done + "/" + count + " loaded (" + ((done * 100) / count) + "%)...");
 						}
 					}
 				}
-				LOGGER.info("Done after "+sw);
+				LOGGER.info("Done after " + sw);
 			}
 		});
-		
+
 		ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
 			fullRegionSync(handler.player.getServerWorld(), sender::sendPacket);
 		});
-		
+
 		ServerEntityWorldChangeEvents.AFTER_PLAYER_CHANGE_WORLD.register((player, origin, destination) -> {
 			fullRegionSync(player.getServerWorld(), player.networkHandler::sendPacket);
 		});

@@ -1,8 +1,6 @@
 package net.modfest.fireblanket.mixin.client.vbo_opto;
 
-import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import net.minecraft.client.gl.GlUniform;
 import net.minecraft.client.gl.ShaderProgram;
 import net.minecraft.client.render.VertexFormat;
 import net.minecraft.resource.ResourceFactory;
@@ -20,7 +18,9 @@ import java.util.Map;
 @Mixin(ShaderProgram.class)
 public class MixinShaderProgram {
 	@Mutable
-	@Shadow @Final private Map<String, Object> samplers;
+	@Shadow
+	@Final
+	private Map<String, Object> samplers;
 
 	@Inject(method = "<init>", at = @At("TAIL"))
 	private void fireblanket$injectBetterMap(ResourceFactory factory, String name, VertexFormat format, CallbackInfo ci) {
@@ -30,7 +30,7 @@ public class MixinShaderProgram {
 	// TODO: Why does this exist?
 	@Redirect(method = "initializeUniforms", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gl/ShaderProgram;addSampler(Ljava/lang/String;Ljava/lang/Object;)V"))
 	private void fireblanket$optimizeVBODraw(ShaderProgram instance, String name, Object sampler) {
-		if (((Integer)sampler) != 0) {
+		if (((Integer) sampler) != 0) {
 			instance.addSampler(name, sampler);
 		}
 	}

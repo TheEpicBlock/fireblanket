@@ -1,14 +1,9 @@
 package net.modfest.fireblanket.client.command;
 
-import static net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.argument;
-import static net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.literal;
-
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.Dynamic3CommandExceptionType;
-
-import com.mojang.serialization.Codec;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.command.CommandRegistryAccess;
@@ -23,6 +18,9 @@ import net.minecraft.text.Text;
 import net.modfest.fireblanket.client.ClientState;
 
 import java.util.stream.Collectors;
+
+import static net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.argument;
+import static net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.literal;
 
 public class EntityMaskCommand {
 	public static void init(LiteralArgumentBuilder<FabricClientCommandSource> base, CommandRegistryAccess access) {
@@ -75,7 +73,7 @@ public class EntityMaskCommand {
 			.then(literal("clear")
 				.executes(client -> {
 					int size = ClientState.MASKED_ENTITIES.size();
-					MinecraftClient.getInstance().submit(() -> ClientState.MASKED_ENTITIES.clear());
+					MinecraftClient.getInstance().submit(ClientState.MASKED_ENTITIES::clear);
 
 					client.getSource().sendFeedback(Text.literal("Cleared " + size + " entit" + (size == 1 ? "y" : "ies") + " out of the mask."));
 					return 0;
@@ -85,7 +83,7 @@ public class EntityMaskCommand {
 	}
 
 	private static final Dynamic3CommandExceptionType WRONG_TYPE_EXCEPTION = new Dynamic3CommandExceptionType(
-			(tag, type, expectedType) -> Text.translatable("argument.resource_tag.invalid_type", tag, type, expectedType)
+		(tag, type, expectedType) -> Text.translatable("argument.resource_tag.invalid_type", tag, type, expectedType)
 	);
 
 	public static <T> RegistryEntry.Reference<T> getRegistryEntry(CommandContext<FabricClientCommandSource> context, String name, RegistryKey<Registry<T>> registryRef) throws CommandSyntaxException {

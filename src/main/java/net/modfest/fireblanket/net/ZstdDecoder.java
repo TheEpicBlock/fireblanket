@@ -1,7 +1,5 @@
 package net.modfest.fireblanket.net;
 
-import java.io.IOException;
-import java.util.List;
 import com.github.luben.zstd.ZstdInputStream;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufOutputStream;
@@ -10,10 +8,13 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageDecoder;
 import net.modfest.fireblanket.util.EndlessByteBufInputStream;
 
+import java.io.IOException;
+import java.util.List;
+
 public class ZstdDecoder extends MessageToMessageDecoder<ByteBuf> {
 
 	private final ByteBuf inBuf = Unpooled.buffer();
-	
+
 	private final ZstdInputStream stream;
 
 	public ZstdDecoder() throws IOException {
@@ -29,11 +30,11 @@ public class ZstdDecoder extends MessageToMessageDecoder<ByteBuf> {
 		out.add(buf);
 		inBuf.discardSomeReadBytes();
 	}
-	
+
 	@Override
 	public void handlerRemoved(ChannelHandlerContext ctx) throws Exception {
 		super.handlerRemoved(ctx);
 		stream.close();
 	}
-	
+
 }

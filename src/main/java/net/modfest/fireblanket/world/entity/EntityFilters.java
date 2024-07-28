@@ -59,8 +59,8 @@ public class EntityFilters {
 			for (EntityType<?> type : Registries.ENTITY_TYPE) {
 				Identifier id = Registries.ENTITY_TYPE.getId(type);
 				if (filter.pattern().asMatchPredicate().test(id.toString())) {
-					((EntityTypeAccessor)type).setMaxTrackDistance(filter.trackingRangeChunks());
-					((EntityTypeAccessor)type).setTrackTickInterval(filter.tickRate());
+					((EntityTypeAccessor) type).setMaxTrackDistance(filter.trackingRangeChunks());
+					((EntityTypeAccessor) type).setTrackTickInterval(filter.tickRate());
 
 					if (filter.forceNoVelcityUpdate()) {
 						FORCE_VELOCITY_UPDATE_OFF.add(type);

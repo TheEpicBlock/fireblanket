@@ -8,6 +8,7 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.structure.StructureTemplateManager;
 import net.minecraft.util.Util;
 import net.minecraft.util.profiler.Profiler;
+import net.minecraft.world.PersistentStateManager;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ChunkStatus;
@@ -32,17 +33,26 @@ import java.util.function.Supplier;
  */
 @Mixin(ServerChunkManager.class)
 public abstract class MixinServerChunkManager {
-	@Shadow @Final Thread serverThread;
+	@Shadow
+	@Final
+	Thread serverThread;
 
-	@Shadow @Final ServerWorld world;
+	@Shadow
+	@Final
+	ServerWorld world;
 
-	@Shadow @Final private ServerChunkManager.MainThreadExecutor mainThreadExecutor;
+	@Shadow
+	@Final
+	private ServerChunkManager.MainThreadExecutor mainThreadExecutor;
 
-	@Shadow protected abstract CompletableFuture<OptionalChunk<Chunk>> getChunkFuture(int chunkX, int chunkZ, ChunkStatus leastStatus, boolean create);
+	@Shadow
+	protected abstract CompletableFuture<OptionalChunk<Chunk>> getChunkFuture(int chunkX, int chunkZ, ChunkStatus leastStatus, boolean create);
 
-	@Shadow public abstract @Nullable Chunk getChunk(int x, int z, ChunkStatus leastStatus, boolean create);
+	@Shadow
+	public abstract @Nullable Chunk getChunk(int x, int z, ChunkStatus leastStatus, boolean create);
 
-	@Shadow protected abstract void putInCache(long pos, @Nullable Chunk chunk, ChunkStatus status);
+	@Shadow
+	protected abstract void putInCache(long pos, @Nullable Chunk chunk, ChunkStatus status);
 
 	private Chunk[] fireblanket$chunkCache;
 	private ChunkStatus[] fireblanket$chunkStatusCache;
@@ -51,7 +61,7 @@ public abstract class MixinServerChunkManager {
 	private int fireblanket$width;
 
 	@Inject(method = "<init>", at = @At("TAIL"))
-	private void fireblanket$initData(ServerWorld world, LevelStorage.Session session, DataFixer dataFixer, StructureTemplateManager structureTemplateManager, Executor workerExecutor, ChunkGenerator chunkGenerator, int viewDistance, int simulationDistance, boolean dsync, WorldGenerationProgressListener worldGenerationProgressListener, ChunkStatusChangeListener chunkStatusChangeListener, Supplier persistentStateManagerFactory, CallbackInfo ci) {
+	private void fireblanket$initData(ServerWorld world, LevelStorage.Session session, DataFixer dataFixer, StructureTemplateManager structureTemplateManager, Executor workerExecutor, ChunkGenerator chunkGenerator, int viewDistance, int simulationDistance, boolean dsync, WorldGenerationProgressListener worldGenerationProgressListener, ChunkStatusChangeListener chunkStatusChangeListener, Supplier<PersistentStateManager> persistentStateManagerFactory, CallbackInfo ci) {
 		// Will be real due to mixin plugin
 
 		if (this.world.getRegistryKey().equals(World.OVERWORLD)) {
@@ -71,7 +81,6 @@ public abstract class MixinServerChunkManager {
 
 	/**
 	 * @author Jasmine
-	 *
 	 * @reason More optimal to have a cache of a given size
 	 */
 	@Inject(method = "getChunk(IILnet/minecraft/world/chunk/ChunkStatus;Z)Lnet/minecraft/world/chunk/Chunk;", at = @At("HEAD"), cancellable = true)
@@ -104,7 +113,7 @@ public abstract class MixinServerChunkManager {
 						// Debug, but let's leave it in: the JIT will uncommon_trap this, so it shouldn't matter
 						if (chunk.getPos().x != x || chunk.getPos().z != z) {
 							throw new IllegalStateException("Fireblanket detected a catastrophic mismatch in its chunk cache. " +
-									"Please report this to Jasmine with the following information: " + chunk.getPos() + " " + x + " " + z + " " + cacheIdx);
+								"Please report this to Jasmine with the following information: " + chunk.getPos() + " " + x + " " + z + " " + cacheIdx);
 						}
 
 						cir.setReturnValue(chunk);
@@ -123,7 +132,7 @@ public abstract class MixinServerChunkManager {
 					this.mainThreadExecutor.runTasks(completableFuture::isDone);
 					OptionalChunk<Chunk> optionalChunk = completableFuture.join();
 					Chunk chunkx = optionalChunk.orElse(null);
-					if (chunkx == null && create) {
+					if (chunkx == null) {
 						throw Util.throwOrPause(new IllegalStateException("Chunk not there when requested: " + optionalChunk.getError()));
 					} else {
 						// Put in the cache for next time

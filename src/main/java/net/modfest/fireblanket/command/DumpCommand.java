@@ -1,5 +1,6 @@
 package net.modfest.fireblanket.command;
 
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.minecraft.block.BlockState;
@@ -15,18 +16,14 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.world.ChunkHolder;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.chunk.WorldChunk;
 
-import static net.minecraft.server.command.CommandManager.literal;
-
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Map;
 
-import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import static net.minecraft.server.command.CommandManager.literal;
 
 public class DumpCommand {
 	public static void init(LiteralArgumentBuilder<ServerCommandSource> base, CommandRegistryAccess access) {
@@ -41,7 +38,7 @@ public class DumpCommand {
 							if (chunk == null) {
 								continue;
 							}
-	
+
 							for (Map.Entry<BlockPos, BlockEntity> e : chunk.getBlockEntities().entrySet()) {
 								if (e.getValue() instanceof CommandBlockBlockEntity cbe) {
 									BlockState state = cbe.getCachedState();
@@ -71,7 +68,7 @@ public class DumpCommand {
 							}
 						}
 					});
-	
+
 					return 0;
 				})
 			)
@@ -80,7 +77,7 @@ public class DumpCommand {
 					for (EntityType<?> type : Registries.ENTITY_TYPE) {
 						server.getSource().sendFeedback(() -> Text.literal(Registries.ENTITY_TYPE.getId(type) + " alwaysUpdateVelocity=" + type.alwaysUpdateVelocity() + " updateDistance(blocks)=" + (type.getMaxTrackDistance() * 16) + " tickInterval=" + type.getTrackTickInterval()), false);
 					}
-	
+
 					return 0;
 				})
 			)

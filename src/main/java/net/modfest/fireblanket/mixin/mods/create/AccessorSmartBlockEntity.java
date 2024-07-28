@@ -8,6 +8,9 @@ import org.spongepowered.asm.mixin.gen.Invoker;
 @Pseudo
 @Mixin(targets = "com.simibubi.create.foundation.blockEntity.SmartBlockEntity")
 public interface AccessorSmartBlockEntity {
-	@Accessor(value = "lazyTickRate", remap = false) int fireblanket$getLazyTickRate();
-	@Invoker(value = "setLazyTickRate", remap = false) void fireblanket$setLazyTickRate(int r);
+	@Accessor(value = "lazyTickRate", remap = false)
+	int fireblanket$getLazyTickRate();
+
+	@Invoker(value = "setLazyTickRate", remap = false)
+	void fireblanket$setLazyTickRate(int r);
 }

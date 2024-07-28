@@ -1,18 +1,15 @@
 package net.modfest.fireblanket.mixin.block;
 
-import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.BlockWithEntity;
 import net.minecraft.block.CommandBlock;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import net.modfest.fireblanket.Fireblanket;
 import net.modfest.fireblanket.net.CommandBlockPacket;
 import net.modfest.fireblanket.world.RepeatingBlockState;
 import org.jetbrains.annotations.Nullable;

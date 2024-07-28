@@ -1,20 +1,8 @@
 package net.modfest.fireblanket.mixin.client.bufferbuilder_opto;
 
-import java.nio.ByteBuffer;
-
-import net.minecraft.client.render.VertexConsumer;
-import net.minecraft.client.util.BufferAllocator;
-import org.lwjgl.system.MemoryUtil;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-
 import net.minecraft.client.render.BufferBuilder;
-import net.minecraft.client.render.VertexFormat;
-import net.minecraft.client.render.VertexFormatElement;
-import net.modfest.fireblanket.client.render.ExtendedVertexFormat;
+import net.minecraft.client.render.VertexConsumer;
+import org.spongepowered.asm.mixin.Mixin;
 
 @Mixin(BufferBuilder.class)
 public abstract class MixinBufferBuilder /*extends FixedColorVertexConsumer*/ implements VertexConsumer {

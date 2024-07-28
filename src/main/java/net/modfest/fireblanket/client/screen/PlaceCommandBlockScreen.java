@@ -14,9 +14,9 @@ public class PlaceCommandBlockScreen extends Screen {
 	protected void init() {
 		super.init();
 		this.addDrawableChild(
-				new ButtonWidget.Builder(Text.literal("Continue..."), (bw) -> client.setScreen(null))
-						.dimensions((this.width / 2) + 50, (this.height / 2) + 58, 100, 20)
-						.build()
+			new ButtonWidget.Builder(Text.literal("Continue..."), (bw) -> client.setScreen(null))
+				.dimensions((this.width / 2) + 50, (this.height / 2) + 58, 100, 20)
+				.build()
 		);
 	}
 

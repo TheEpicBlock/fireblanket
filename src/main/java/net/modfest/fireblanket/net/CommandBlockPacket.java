@@ -7,7 +7,7 @@ import net.minecraft.util.Identifier;
 
 public record CommandBlockPacket() implements CustomPayload {
 	public static final CustomPayload.Id<CommandBlockPacket> ID =
-			new CustomPayload.Id<>(Identifier.of("fireblanket", "place_command_block"));
+		new CustomPayload.Id<>(Identifier.of("fireblanket", "place_command_block"));
 	public static final CommandBlockPacket INST = new CommandBlockPacket();
 	public static final PacketCodec<RegistryByteBuf, CommandBlockPacket> CODEC = PacketCodec.unit(INST);
 

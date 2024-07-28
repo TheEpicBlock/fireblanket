@@ -1,11 +1,5 @@
 package net.modfest.fireblanket.world.render_regions;
 
-import java.util.AbstractCollection;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Map.Entry;
-
 import com.google.common.collect.Iterables;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Multimap;
@@ -16,10 +10,16 @@ import it.unimi.dsi.fastutil.objects.ReferenceArrayList;
 import it.unimi.dsi.fastutil.objects.ReferenceList;
 import it.unimi.dsi.fastutil.objects.ReferenceLists;
 
+import java.util.AbstractCollection;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
+
 public class Long2ReferenceMultimap<V> implements ListMultimap<Long, V> {
 
 	private final Long2ReferenceMap<ReferenceList<V>> underlying = new Long2ReferenceOpenHashMap<>();
-	
+
 	@Override
 	public int size() {
 		int count = 0;
@@ -34,11 +34,12 @@ public class Long2ReferenceMultimap<V> implements ListMultimap<Long, V> {
 		return underlying.isEmpty();
 	}
 
-	@Override @Deprecated
+	@Override
+	@Deprecated
 	public boolean containsKey(Object key) {
 		return underlying.containsKey(key);
 	}
-	
+
 	public boolean containsKey(long key) {
 		return underlying.containsKey(key);
 	}
@@ -51,30 +52,33 @@ public class Long2ReferenceMultimap<V> implements ListMultimap<Long, V> {
 		return false;
 	}
 
-	@Override @Deprecated
+	@Override
+	@Deprecated
 	public boolean containsEntry(Object key, Object value) {
 		if (key instanceof Long l) return get(l).contains(value);
 		return false;
 	}
-	
+
 	public boolean containsEntry(long key, Object value) {
 		return get(key).contains(value);
 	}
 
-	@Override @Deprecated
+	@Override
+	@Deprecated
 	public ReferenceList<V> get(Long key) {
 		return get(key.longValue());
 	}
-	
+
 	public ReferenceList<V> get(long key) {
 		return underlying.getOrDefault(key, ReferenceLists.emptyList());
 	}
 
-	@Override @Deprecated
+	@Override
+	@Deprecated
 	public boolean put(Long key, V value) {
 		return put(key.longValue(), value);
 	}
-	
+
 	public boolean put(long key, V value) {
 		ReferenceList<V> li = underlying.get(key);
 		if (li == null) {
@@ -84,7 +88,8 @@ public class Long2ReferenceMultimap<V> implements ListMultimap<Long, V> {
 		return li.add(value);
 	}
 
-	@Override @Deprecated
+	@Override
+	@Deprecated
 	public boolean remove(Object key, Object value) {
 		if (key instanceof Long l) return remove(l.longValue(), value);
 		return false;
@@ -96,11 +101,12 @@ public class Long2ReferenceMultimap<V> implements ListMultimap<Long, V> {
 		return li.remove(value);
 	}
 
-	@Override @Deprecated
+	@Override
+	@Deprecated
 	public boolean putAll(Long key, Iterable<? extends V> values) {
 		return putAll(key.longValue(), values);
 	}
-	
+
 	public boolean putAll(long key, Iterable<? extends V> values) {
 		boolean any = false;
 		for (V v : values) {
@@ -109,7 +115,8 @@ public class Long2ReferenceMultimap<V> implements ListMultimap<Long, V> {
 		return any;
 	}
 
-	@Override @Deprecated
+	@Override
+	@Deprecated
 	public boolean putAll(Multimap<? extends Long, ? extends V> multimap) {
 		boolean any = false;
 		for (var en : multimap.asMap().entrySet()) {
@@ -142,7 +149,8 @@ public class Long2ReferenceMultimap<V> implements ListMultimap<Long, V> {
 		return underlying.keySet();
 	}
 
-	@Override @Deprecated
+	@Override
+	@Deprecated
 	public LongMultiset keys() {
 		LongMultiset ms = new LongMultiset();
 		for (var en : underlying.long2ReferenceEntrySet()) {
@@ -158,7 +166,7 @@ public class Long2ReferenceMultimap<V> implements ListMultimap<Long, V> {
 			public Iterator<V> iterator() {
 				return Iterables.concat(underlying.values()).iterator();
 			}
-			
+
 			@Override
 			public int size() {
 				return Long2ReferenceMultimap.this.size();
@@ -181,14 +189,16 @@ public class Long2ReferenceMultimap<V> implements ListMultimap<Long, V> {
 		};
 	}
 
-	@Override @Deprecated
+	@Override
+	@Deprecated
 	public Collection<Entry<Long, V>> entries() {
-		return (Collection)long2ReferenceEntries();
+		return (Collection) long2ReferenceEntries();
 	}
 
-	@Override @Deprecated
+	@Override
+	@Deprecated
 	public Map<Long, Collection<V>> asMap() {
-		return (Map)underlying;
+		return (Map) underlying;
 	}
 
 	public Collection<Long2ReferenceMap.Entry<V>> long2ReferenceEntries() {

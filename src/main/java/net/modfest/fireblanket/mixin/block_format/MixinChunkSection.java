@@ -38,10 +38,15 @@ public abstract class MixinChunkSection {
 
 	private static final int MASK_BITS = 1048575;
 
-	@Shadow @Final private PalettedContainer<BlockState> blockStateContainer;
-	@Shadow private short nonEmptyBlockCount;
-	@Shadow private short nonEmptyFluidCount;
-	@Shadow private short randomTickableBlockCount;
+	@Shadow
+	@Final
+	private PalettedContainer<BlockState> blockStateContainer;
+	@Shadow
+	private short nonEmptyBlockCount;
+	@Shadow
+	private short nonEmptyFluidCount;
+	@Shadow
+	private short randomTickableBlockCount;
 
 	// 20 bits per block, so 3 blocks per long. ceil(4096/3) --> 1366
 	private final long[] fireblanket$denseBlockStorage = new long[1366];
@@ -70,7 +75,6 @@ public abstract class MixinChunkSection {
 
 	/**
 	 * @author Jasmine
-	 *
 	 * @reason Optimized with flat array
 	 */
 	@Overwrite
@@ -88,7 +92,7 @@ public abstract class MixinChunkSection {
 		try {
 			// Get the old state that we already see
 			long oldBits = this.fireblanket$denseBlockStorage[arrIdx];
-			oldState = FlatBlockstateArray.FROM_ID[((int)(oldBits >>> shift) & MASK_BITS)];
+			oldState = FlatBlockstateArray.FROM_ID[((int) (oldBits >>> shift) & MASK_BITS)];
 
 			// Make data for the new state
 			long newId = Block.STATE_IDS.getRawId(state);
@@ -107,8 +111,8 @@ public abstract class MixinChunkSection {
 			if (this.fireblanket$stamp.get() != stamp) {
 				Map<Thread, StackTraceElement[]> traces = Thread.getAllStackTraces();
 				String dumps = traces.entrySet().stream()
-						.map(MixinChunkSection::formatThreadDump)
-						.collect(Collectors.joining("\n"));
+					.map(MixinChunkSection::formatThreadDump)
+					.collect(Collectors.joining("\n"));
 
 				String error = "Accessing ChunkSection from multiple threads!";
 				CrashReport crashReport = new CrashReport(error, new IllegalStateException(error));
@@ -153,7 +157,6 @@ public abstract class MixinChunkSection {
 
 	/**
 	 * @author Jasmine
-	 *
 	 * @reason Optimized with flat array
 	 */
 	@Overwrite
@@ -176,7 +179,6 @@ public abstract class MixinChunkSection {
 
 	/**
 	 * @author Jasmine
-	 *
 	 * @reason Optimized with flat array. Vanilla duplicates the getBlockState logic, whereas here just calls the
 	 * method for simplicity
 	 */
@@ -187,7 +189,6 @@ public abstract class MixinChunkSection {
 
 	/**
 	 * @author Jasmine
-	 *
 	 * @reason Flush all updates to the container
 	 */
 	@Overwrite
@@ -233,7 +234,6 @@ public abstract class MixinChunkSection {
 
 	/**
 	 * @author Jasmine
-	 *
 	 * @reason We don't really need this
 	 */
 	@Overwrite

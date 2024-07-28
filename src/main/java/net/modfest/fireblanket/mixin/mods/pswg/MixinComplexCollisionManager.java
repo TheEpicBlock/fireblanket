@@ -1,16 +1,15 @@
 package net.modfest.fireblanket.mixin.mods.pswg;
 
-import java.util.Optional;
-
+import net.minecraft.entity.Entity;
+import net.minecraft.util.math.Vec3d;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Pseudo;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.util.math.Vec3d;
+import java.util.Optional;
 
 @Pseudo
-@Mixin(targets="com.parzivail.util.entity.collision.ComplexCollisionManager")
+@Mixin(targets = "com.parzivail.util.entity.collision.ComplexCollisionManager")
 public class MixinComplexCollisionManager {
 
 	/**
@@ -21,5 +20,5 @@ public class MixinComplexCollisionManager {
 	public static Optional<Vec3d> adjustMovementForCollisions(Entity entity, Vec3d currentMovement) {
 		return Optional.empty();
 	}
-	
+
 }

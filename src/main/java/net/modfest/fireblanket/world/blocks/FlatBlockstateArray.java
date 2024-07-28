@@ -5,6 +5,7 @@ import net.minecraft.block.BlockState;
 
 public class FlatBlockstateArray {
 	public static BlockState[] FROM_ID;
+
 	public static void apply() {
 		int size = Block.STATE_IDS.size();
 

@@ -8,9 +8,9 @@ import org.spongepowered.asm.mixin.injection.ModifyConstant;
 @Mixin(SizePrepender.class)
 public class MixinSizePrepender {
 
-	@ModifyConstant(constant=@Constant(intValue=3), method="encode")
+	@ModifyConstant(constant = @Constant(intValue = 3), method = "encode")
 	public int fireblanket$liftPacketSizeLimit(int orig) {
 		return 5;
 	}
-	
+
 }

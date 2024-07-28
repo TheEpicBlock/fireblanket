@@ -73,7 +73,7 @@ public class BERMaskCommand {
 			.then(literal("clear")
 				.executes(client -> {
 					int size = ClientState.MASKED_BERS.size();
-					MinecraftClient.getInstance().submit(() -> ClientState.MASKED_BERS.clear());
+					MinecraftClient.getInstance().submit(ClientState.MASKED_BERS::clear);
 
 					client.getSource().sendFeedback(Text.literal("Cleared " + size + " BE" + (size == 1 ? "" : "s") + " out of the mask."));
 					return 0;
@@ -83,7 +83,7 @@ public class BERMaskCommand {
 	}
 
 	private static final Dynamic3CommandExceptionType WRONG_TYPE_EXCEPTION = new Dynamic3CommandExceptionType(
-			(tag, type, expectedType) -> Text.translatable("argument.resource_tag.invalid_type", tag, type, expectedType)
+		(tag, type, expectedType) -> Text.translatable("argument.resource_tag.invalid_type", tag, type, expectedType)
 	);
 
 	public static <T> RegistryEntry.Reference<T> getRegistryEntry(CommandContext<FabricClientCommandSource> context, String name, RegistryKey<Registry<T>> registryRef) throws CommandSyntaxException {

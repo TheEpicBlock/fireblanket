@@ -1,29 +1,33 @@
 {
 	"schemaVersion": 1,
-	"id": "fireblanket",
+	"id": "${modId}",
 	"version": "${version}",
-	"name": "Fireblanket",
-	"description": "Performance, bugfixes, and utilities for ModFest events.",
+	"name": "${modName}",
+	"description": "${modDescription}",
 	"authors": [
-		"jaskarth",
-		"unascribed"
+		"${authors}"
 	],
 	"contributors": [
-		"Patbox",
-		"IThundxr"
+		"${contributors}"
 	],
-	"license": "AGPL-3.0-or-later",
-	"icon": "assets/fireblanket/icon.png",
 	"contact": {
-		"homepage": "https://github.com/ModFest/fireblanket",
-		"issues": "https://github.com/ModFest/fireblanket/issues",
-		"sources": "https://github.com/ModFest/fireblanket"
+		"homepage": "${homepage}",
+		"issues": "${issues}",
+		"sources": "${sources}"
 	},
+	"license": "${license}",
+	"icon": "assets/fireblanket/icon.png",
 	"entrypoints": {
-		"main": [ "net.modfest.fireblanket.Fireblanket" ],
-		"client": [ "net.modfest.fireblanket.FireblanketClient" ]
+		"main": [
+			"net.modfest.fireblanket.Fireblanket"
+		],
+		"client": [
+			"net.modfest.fireblanket.FireblanketClient"
+		]
 	},
-	"mixins": [ "fireblanket.mixins.json" ],
+	"mixins": [
+		"fireblanket.mixins.json"
+	],
 	"accessWidener": "fireblanket.aw",
 	"depends": {
 		"minecraft": ">=${mc}",

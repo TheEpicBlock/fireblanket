@@ -3,8 +3,6 @@ package net.modfest.fireblanket.client.render;
 import com.mojang.blaze3d.systems.RenderSystem;
 import it.unimi.dsi.fastutil.HashCommon;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.render.Camera;
-import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.WorldRenderer;
 import net.minecraft.client.render.debug.DebugRenderer;
@@ -67,10 +65,10 @@ public final class RenderRegionRenderer {
 			matrices.loadIdentity();
 
 			DebugRenderer.drawString(matrices, imm, name,
-					rr.minX() + (rr.maxX() - rr.minX()) / 2.0 + 0.5,
-					rr.minY() + (rr.maxY() - rr.minY()) / 2.0 + 0.5,
-					rr.minZ() + (rr.maxZ() - rr.minZ()) / 2.0 + 0.5,
-					0xFFFFFF, 0.03F);
+				rr.minX() + (rr.maxX() - rr.minX()) / 2.0 + 0.5,
+				rr.minY() + (rr.maxY() - rr.minY()) / 2.0 + 0.5,
+				rr.minZ() + (rr.maxZ() - rr.minZ()) / 2.0 + 0.5,
+				0xFFFFFF, 0.03F);
 
 			matrices.pop();
 		}

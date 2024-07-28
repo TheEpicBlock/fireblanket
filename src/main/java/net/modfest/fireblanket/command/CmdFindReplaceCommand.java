@@ -1,5 +1,7 @@
 package net.modfest.fireblanket.command;
 
+import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.CommandBlockBlockEntity;
 import net.minecraft.command.CommandRegistryAccess;
@@ -10,15 +12,12 @@ import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.chunk.WorldChunk;
 
-import static net.minecraft.server.command.CommandManager.literal;
-import static net.minecraft.server.command.CommandManager.argument;
-
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.mojang.brigadier.arguments.StringArgumentType;
-import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import static net.minecraft.server.command.CommandManager.argument;
+import static net.minecraft.server.command.CommandManager.literal;
 
 public class CmdFindReplaceCommand {
 	public static void init(LiteralArgumentBuilder<ServerCommandSource> base, CommandRegistryAccess access) {
@@ -29,11 +28,11 @@ public class CmdFindReplaceCommand {
 					.executes(ctx -> {
 						Pattern p = Pattern.compile(StringArgumentType.getString(ctx, "regex"));
 						String replacement = StringArgumentType.getString(ctx, "replacement");
-						
+
 						StringBuilder sb = new StringBuilder();
 						int blocks = 0;
 						int matches = 0;
-						
+
 						ServerWorld world = ctx.getSource().getWorld();
 						for (ChunkHolder holder : world.getChunkManager().chunkLoadingManager.entryIterator()) {
 							WorldChunk chunk = holder.getWorldChunk();
@@ -66,9 +65,9 @@ public class CmdFindReplaceCommand {
 						} else {
 							final int fmatches = matches;
 							final int fblocks = blocks;
-							ctx.getSource().sendFeedback(() -> Text.literal("Replaced "+fmatches+" occurence"+(fmatches == 1 ? "" : "s")+" across "+fblocks+" block"+(fblocks == 1 ? "" : "s")), true);
+							ctx.getSource().sendFeedback(() -> Text.literal("Replaced " + fmatches + " occurence" + (fmatches == 1 ? "" : "s") + " across " + fblocks + " block" + (fblocks == 1 ? "" : "s")), true);
 						}
-		
+
 						return 0;
 					})
 				)

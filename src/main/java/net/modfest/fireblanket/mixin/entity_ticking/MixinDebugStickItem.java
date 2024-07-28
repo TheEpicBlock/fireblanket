@@ -2,7 +2,6 @@ package net.modfest.fireblanket.mixin.entity_ticking;
 
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.NbtComponent;
-import net.minecraft.item.tooltip.TooltipType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -10,6 +9,7 @@ import net.minecraft.item.DebugStickItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
+import net.minecraft.item.tooltip.TooltipType;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
@@ -59,7 +59,7 @@ public class MixinDebugStickItem extends Item {
 				}
 
 				if (nbt.getBoolean(NOMOV)) {
-					((ImmmovableLivingEntity)entity).setNoMovement(true);
+					((ImmmovableLivingEntity) entity).setNoMovement(true);
 				}
 
 				user.sendMessage(Text.literal("Successfully applied."), true);

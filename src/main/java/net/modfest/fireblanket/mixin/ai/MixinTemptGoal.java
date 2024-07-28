@@ -8,7 +8,6 @@ import org.spongepowered.asm.mixin.Overwrite;
 public class MixinTemptGoal {
 	/**
 	 * @author Jasmine
-	 *
 	 * @reason Hey, at least it's better than injecting unconditionally at head.
 	 */
 	@Overwrite

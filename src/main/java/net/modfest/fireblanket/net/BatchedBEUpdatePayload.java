@@ -10,15 +10,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 public record BatchedBEUpdatePayload(List<BEUpdate> updates) implements CustomPayload {
-    public static final CustomPayload.Id<BatchedBEUpdatePayload> ID = new CustomPayload.Id<>(Fireblanket.BATCHED_BE_UPDATE);
-    public static final PacketCodec<RegistryByteBuf, BatchedBEUpdatePayload> CODEC = PacketCodec.tuple(
-            PacketCodecs.collection(ArrayList::new, BEUpdate.CODEC),
-            BatchedBEUpdatePayload::updates,
-            BatchedBEUpdatePayload::new
-    );
+	public static final CustomPayload.Id<BatchedBEUpdatePayload> ID = new CustomPayload.Id<>(Fireblanket.BATCHED_BE_UPDATE);
+	public static final PacketCodec<RegistryByteBuf, BatchedBEUpdatePayload> CODEC = PacketCodec.tuple(
+		PacketCodecs.collection(ArrayList::new, BEUpdate.CODEC),
+		BatchedBEUpdatePayload::updates,
+		BatchedBEUpdatePayload::new
+	);
 
-    @Override
-    public CustomPayload.Id<? extends CustomPayload> getId() {
-        return ID;
-    }
+	@Override
+	public CustomPayload.Id<? extends CustomPayload> getId() {
+		return ID;
+	}
 }

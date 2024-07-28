@@ -1,14 +1,5 @@
 package net.modfest.fireblanket.world.render_regions;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Supplier;
-
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.ImmutableList;
@@ -16,7 +7,6 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimaps;
-
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
 import it.unimi.dsi.fastutil.longs.LongIterator;
@@ -44,22 +34,31 @@ import net.minecraft.util.math.ChunkSectionPos;
 import net.modfest.fireblanket.world.render_regions.RegionSyncRequest.FullState;
 import net.modfest.fireblanket.world.render_regions.RenderRegion.Mode;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
+
 public class RenderRegions {
 
 	private final BiMap<String, ExplainedRenderRegion> regionsByName = HashBiMap.create();
 	private final Reference2ReferenceMap<RenderRegion, ExplainedRenderRegion> explaineds = new Reference2ReferenceOpenHashMap<>();
 	private final Long2ReferenceMultimap<ExplainedRenderRegion> regionsByChunkSection = new Long2ReferenceMultimap<>();
-	
+
 	private final Long2ReferenceMultimap<ExplainedRenderRegion> blockRegions = new Long2ReferenceMultimap<>();
 	private final ListMultimap<UUID, ExplainedRenderRegion> entityRegions = Multimaps.newListMultimap(new Object2ReferenceOpenHashMap<>(), ReferenceArrayList::new);
 	private final ListMultimap<Identifier, ExplainedRenderRegion> exclusiveEntityTypeRegions = Multimaps.newListMultimap(new Object2ReferenceOpenHashMap<>(), ReferenceArrayList::new);
 	private final ListMultimap<Identifier, ExplainedRenderRegion> exclusiveBeTypeRegions = Multimaps.newListMultimap(new Object2ReferenceOpenHashMap<>(), ReferenceArrayList::new);
-	
+
 	private final Runnable dirtyListener;
 	private final Consumer<RegionSyncRequest> syncer;
-	
+
 	private boolean dontSync = false;
-	
+
 	private int era = 0;
 
 	public RenderRegions() {
@@ -70,12 +69,12 @@ public class RenderRegions {
 		this.dirtyListener = dirtyListener;
 		this.syncer = syncer;
 	}
-	
+
 	public void markDirty() {
 		era++;
 		if (dirtyListener != null) dirtyListener.run();
 	}
-	
+
 	public void sync(Supplier<RegionSyncRequest> supplier) {
 		if (dontSync) return;
 		if (syncer != null) {
@@ -98,11 +97,11 @@ public class RenderRegions {
 		markDirty();
 		sync(() -> new RegionSyncRequest.AddRegion(name, region));
 	}
-	
+
 	public void remove(RenderRegion region) {
 		remove(region, true);
 	}
-	
+
 	private void remove(RenderRegion region, boolean clear) {
 		if (region == null) return;
 		detachAll(region, clear);
@@ -140,21 +139,21 @@ public class RenderRegions {
 			dontSync = false;
 		}
 	}
-	
+
 	public FullState toPacket() {
 		return new FullState(ImmutableList.copyOf(Iterables.transform(explaineds.values(), ExplainedRenderRegion::copy)));
 	}
-	
+
 	public Map<String, RenderRegion> getRegionsByName() {
 		return Maps.transformValues(regionsByName, ex -> ex.reg);
 	}
-	
+
 	private void removeFromGlobal(ExplainedRenderRegion ex) {
 		ex.reg.affectedChunkLongs().forEach(l -> {
 			regionsByChunkSection.remove(l, ex);
 		});
 	}
-	
+
 	private void addToGlobal(ExplainedRenderRegion ex) {
 		ex.reg.affectedChunkLongs().forEach(l -> {
 			regionsByChunkSection.put(l, ex);
@@ -172,11 +171,11 @@ public class RenderRegions {
 		markDirty();
 		sync(() -> new RegionSyncRequest.Reset(true));
 	}
-	
+
 	public void attachEntity(RenderRegion region, Entity e) {
 		attachEntity(region, e.getUuid());
 	}
-	
+
 	public void attachEntity(RenderRegion region, UUID id) {
 		if (region == null) return;
 		ExplainedRenderRegion ex = explaineds.get(region);
@@ -185,11 +184,11 @@ public class RenderRegions {
 		markDirty();
 		sync(() -> new RegionSyncRequest.AttachEntity(ex.name, id));
 	}
-	
+
 	public void attachEntityType(RenderRegion region, EntityType<?> type) {
 		attachEntityType(region, EntityType.getId(type));
 	}
-	
+
 	public void attachEntityType(RenderRegion region, Identifier id) {
 		if (region == null || id == null) return;
 		ExplainedRenderRegion ex = explaineds.get(region);
@@ -201,11 +200,11 @@ public class RenderRegions {
 		markDirty();
 		sync(() -> new RegionSyncRequest.AttachEntityType(ex.name, id));
 	}
-	
+
 	public void attachBlock(RenderRegion region, BlockEntity be) {
 		attachBlock(region, be.getPos().asLong());
 	}
-	
+
 	public void attachBlock(RenderRegion region, long pos) {
 		if (region == null) return;
 		ExplainedRenderRegion ex = explaineds.get(region);
@@ -215,11 +214,11 @@ public class RenderRegions {
 		markDirty();
 		sync(() -> new RegionSyncRequest.AttachBlock(ex.name, pos));
 	}
-	
+
 	public void attachBlockEntityType(RenderRegion region, BlockEntityType<?> type) {
 		attachBlockEntityType(region, BlockEntityType.getId(type));
 	}
-	
+
 	public void attachBlockEntityType(RenderRegion region, Identifier id) {
 		if (region == null || id == null) return;
 		ExplainedRenderRegion ex = explaineds.get(region);
@@ -231,11 +230,11 @@ public class RenderRegions {
 		markDirty();
 		sync(() -> new RegionSyncRequest.AttachBlockEntityType(ex.name, id));
 	}
-	
+
 	public boolean detachEntity(RenderRegion region, Entity e) {
 		return detachEntity(region, e.getUuid());
 	}
-	
+
 	public boolean detachEntity(RenderRegion region, UUID id) {
 		if (region == null) return false;
 		ExplainedRenderRegion ex = explaineds.get(region);
@@ -245,11 +244,11 @@ public class RenderRegions {
 		sync(() -> new RegionSyncRequest.DetachEntity(ex.name, id));
 		return success;
 	}
-	
+
 	public void detachEntityType(RenderRegion region, EntityType<?> type) {
 		detachEntityType(region, Registries.ENTITY_TYPE.getId(type));
 	}
-	
+
 	public void detachEntityType(RenderRegion region, Identifier id) {
 		if (region == null) return;
 		ExplainedRenderRegion ex = explaineds.get(region);
@@ -259,11 +258,11 @@ public class RenderRegions {
 		markDirty();
 		sync(() -> new RegionSyncRequest.DetachEntityType(ex.name, id));
 	}
-	
+
 	public boolean detachBlock(RenderRegion region, BlockEntity be) {
 		return detachBlock(region, be.getPos().asLong());
 	}
-	
+
 	public boolean detachBlock(RenderRegion region, long pos) {
 		if (region == null) return false;
 		ExplainedRenderRegion ex = explaineds.get(region);
@@ -273,11 +272,11 @@ public class RenderRegions {
 		sync(() -> new RegionSyncRequest.DetachBlock(ex.name, pos));
 		return success;
 	}
-	
+
 	public void detachBlockEntityType(RenderRegion region, BlockEntityType<?> type) {
 		detachBlockEntityType(region, Registries.BLOCK_ENTITY_TYPE.getId(type));
 	}
-	
+
 	public void detachBlockEntityType(RenderRegion region, Identifier id) {
 		if (region == null) return;
 		ExplainedRenderRegion ex = explaineds.get(region);
@@ -287,12 +286,12 @@ public class RenderRegions {
 		markDirty();
 		sync(() -> new RegionSyncRequest.DetachBlockEntityType(ex.name, id));
 	}
-	
+
 	private void checkBlanketDeny(ExplainedRenderRegion ex) {
 		if (ex.entityAttachments.isEmpty()
-				&& ex.blockAttachments.isEmpty()
-				&& ex.entityTypeAttachments.isEmpty()
-				&& ex.beTypeAttachments.isEmpty()) {
+			&& ex.blockAttachments.isEmpty()
+			&& ex.entityTypeAttachments.isEmpty()
+			&& ex.beTypeAttachments.isEmpty()) {
 			ex.blanketDeny = true;
 		}
 	}
@@ -301,7 +300,7 @@ public class RenderRegions {
 	public int detachAll(RenderRegion region) {
 		return detachAll(region, true);
 	}
-	
+
 	private int detachAll(RenderRegion region, boolean clear) {
 		if (region == null) return 0;
 		ExplainedRenderRegion ex = explaineds.get(region);
@@ -337,60 +336,60 @@ public class RenderRegions {
 		if (ex == null) return null;
 		return ex.reg;
 	}
-	
+
 	public String getName(RenderRegion region) {
 		return regionsByName.inverse().get(explaineds.get(region));
 	}
-	
+
 	public LongSet getBlockAttachments(RenderRegion region) {
 		ExplainedRenderRegion ex = explaineds.get(region);
 		if (ex == null) return LongSets.emptySet();
 		return ex.blockAttachments;
 	}
-	
+
 	public Set<UUID> getEntityAttachments(RenderRegion region) {
 		ExplainedRenderRegion ex = explaineds.get(region);
 		if (ex == null) return Collections.emptySet();
 		return ex.entityAttachments;
 	}
-	
+
 	public Set<Identifier> getBlockEntityTypeAttachments(RenderRegion region) {
 		ExplainedRenderRegion ex = explaineds.get(region);
 		if (ex == null) return Collections.emptySet();
 		return ex.beTypeAttachments;
 	}
-	
+
 	public Set<Identifier> getEntityTypeAttachments(RenderRegion region) {
 		ExplainedRenderRegion ex = explaineds.get(region);
 		if (ex == null) return Collections.emptySet();
 		return ex.entityTypeAttachments;
 	}
-	
+
 	public boolean shouldRender(double viewerX, double viewerY, double viewerZ, BlockEntity be) {
-		long viewerPos = BlockPos.asLong((int)viewerX, (int)viewerY, (int)viewerZ);
+		long viewerPos = BlockPos.asLong((int) viewerX, (int) viewerY, (int) viewerZ);
 		if (be instanceof RegionSubject rs) {
 			Boolean cached = rs.fireblanket$cachedShouldRender(era, viewerPos);
 			if (cached != null) return cached;
 		}
 		boolean res = shouldRender(ex -> ex.beTypeAttachments, BlockEntityType.getId(be.getType()),
-				exclusiveBeTypeRegions,
-				blockRegions.get(be.getPos().asLong()), viewerX, viewerY, viewerZ);
+			exclusiveBeTypeRegions,
+			blockRegions.get(be.getPos().asLong()), viewerX, viewerY, viewerZ);
 		if (be instanceof RegionSubject rs) {
 			rs.fireblanket$setCachedState(era, viewerPos, res);
 		}
 		return res;
 	}
-	
+
 	public boolean shouldRender(double viewerX, double viewerY, double viewerZ, Entity e) {
 		if (e instanceof PlayerEntity && e.shouldRenderName()) return true;
-		long viewerPos = BlockPos.asLong((int)viewerX, (int)viewerY, (int)viewerZ);
+		long viewerPos = BlockPos.asLong((int) viewerX, (int) viewerY, (int) viewerZ);
 		if (e instanceof RegionSubject rs) {
 			Boolean cached = rs.fireblanket$cachedShouldRender(era, viewerPos);
 			if (cached != null) return cached;
 		}
 		boolean res = shouldRender(ex -> ex.entityTypeAttachments, EntityType.getId(e.getType()),
-				exclusiveEntityTypeRegions,
-				entityRegions.get(e.getUuid()), viewerX, viewerY, viewerZ);
+			exclusiveEntityTypeRegions,
+			entityRegions.get(e.getUuid()), viewerX, viewerY, viewerZ);
 		if (e instanceof RegionSubject rs) {
 			rs.fireblanket$setCachedState(era, viewerPos, res);
 		}
@@ -398,16 +397,16 @@ public class RenderRegions {
 	}
 
 	private boolean shouldRender(Function<ExplainedRenderRegion, Set<Identifier>> typeAttachments, Identifier type,
-			ListMultimap<Identifier, ExplainedRenderRegion> exclusiveTypeRegions,
-			Iterable<ExplainedRenderRegion> assignedRegions, double viewerX, double viewerY, double viewerZ) {
+	                             ListMultimap<Identifier, ExplainedRenderRegion> exclusiveTypeRegions,
+	                             Iterable<ExplainedRenderRegion> assignedRegions, double viewerX, double viewerY, double viewerZ) {
 		boolean anyExclusive = false;
-		int vX = (int)viewerX;
-		int vY = (int)viewerY;
-		int vZ = (int)viewerZ;
-		long chunkSect = ChunkSectionPos.asLong(vX>>4, vY>>4, vZ>>4);
-		
+		int vX = (int) viewerX;
+		int vY = (int) viewerY;
+		int vZ = (int) viewerZ;
+		long chunkSect = ChunkSectionPos.asLong(vX >> 4, vY >> 4, vZ >> 4);
+
 		boolean blanketDeny = false;
-		
+
 		// check explicit id/position first
 		for (var rr : assignedRegions) {
 			if (rr == null) continue;
@@ -420,7 +419,7 @@ public class RenderRegions {
 				return rr.reg.mode() == Mode.ALLOW;
 			}
 		}
-		
+
 		// fall through to area regions that may have a type match
 		boolean permitted = false;
 		for (var rr : regionsByChunkSection.get(chunkSect)) {
@@ -441,7 +440,7 @@ public class RenderRegions {
 			}
 		}
 		if (permitted) return true;
-		
+
 		// exclusive regions not matched above must mean reject
 		for (var rr : exclusiveTypeRegions.get(type)) {
 			if (!rr.reg.contains(viewerX, viewerY, viewerZ)) {
@@ -451,7 +450,7 @@ public class RenderRegions {
 		if (anyExclusive) return false;
 		return !blanketDeny;
 	}
-	
+
 	public void readNbt(NbtCompound nbt) {
 		for (String name : nbt.getKeys()) {
 			NbtCompound cmp = nbt.getCompound(name);
@@ -461,7 +460,7 @@ public class RenderRegions {
 			add(name, r);
 			int[] entities = cmp.getIntArray("EAtt");
 			for (int i = 0; i < entities.length; i += 4) {
-				attachEntity(r, Uuids.toUuid(Arrays.copyOfRange(entities, i, i+4)));
+				attachEntity(r, Uuids.toUuid(Arrays.copyOfRange(entities, i, i + 4)));
 			}
 			long[] blockentities = cmp.getLongArray("BEAtt");
 			for (long l : blockentities) {
@@ -475,13 +474,13 @@ public class RenderRegions {
 			}
 		}
 	}
-	
+
 	public void writeNbt(NbtCompound nbt) {
 		for (var ex : explaineds.values()) {
 			RenderRegion r = ex.reg;
 			NbtCompound cmp = new NbtCompound();
 			cmp.putString("Mode", r.mode().name());
-			cmp.putIntArray("Box", new int[] { r.minX(), r.minY(), r.minZ(), r.maxX(), r.maxY(), r.maxZ() });
+			cmp.putIntArray("Box", new int[]{r.minX(), r.minY(), r.minZ(), r.maxX(), r.maxY(), r.maxZ()});
 			IntList entities = new IntArrayList();
 			for (var entityId : ex.entityAttachments) {
 				entities.addAll(IntList.of(Uuids.toIntArray(entityId)));
@@ -501,5 +500,5 @@ public class RenderRegions {
 			nbt.put(ex.name, cmp);
 		}
 	}
-	
+
 }

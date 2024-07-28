@@ -22,16 +22,22 @@ import java.util.function.Predicate;
  */
 @Mixin(EntitySelectorReader.class)
 public class MixinEntitySelectorReader implements ForceableArgument {
-	@Shadow private boolean includesNonPlayers;
-	@Shadow private int limit;
-	@Shadow private NumberRange.DoubleRange distance;
-	@Shadow private Double dx;
-	@Shadow private Double dy;
-	@Shadow private Double dz;
+	@Shadow
+	private boolean includesNonPlayers;
+	@Shadow
+	private int limit;
+	@Shadow
+	private NumberRange.DoubleRange distance;
+	@Shadow
+	private Double dx;
+	@Shadow
+	private Double dy;
+	@Shadow
+	private Double dz;
 	private boolean forced = false;
 
 	private static final DynamicCommandExceptionType LIMIT_UNFORCED = new DynamicCommandExceptionType(
-			count -> Text.stringifiedTranslatable("argument.entity.selector.limit.unforced", count)
+		count -> Text.stringifiedTranslatable("argument.entity.selector.limit.unforced", count)
 	);
 
 	@Override
@@ -47,10 +53,10 @@ public class MixinEntitySelectorReader implements ForceableArgument {
 	@Inject(method = "read", at = @At("RETURN"))
 	private void fireblanket$preventFootgun(CallbackInfoReturnable<EntitySelector> info) throws CommandSyntaxException {
 		if (this.includesNonPlayers
-				//main anti-footgun: don't allow someone to affect every single entity on the server at once
-				&& (this.limit > 50  && this.distance == NumberRange.DoubleRange.ANY)
-				&& (this.dx == null && this.dy == null && this.dz == null)
-				&& !forced) {
+			//main anti-footgun: don't allow someone to affect every single entity on the server at once
+			&& (this.limit > 50 && this.distance == NumberRange.DoubleRange.ANY)
+			&& (this.dx == null && this.dy == null && this.dz == null)
+			&& !forced) {
 			throw LIMIT_UNFORCED.create(this.limit);
 		}
 	}

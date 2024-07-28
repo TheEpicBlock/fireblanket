@@ -1,5 +1,25 @@
 package net.modfest.fireblanket.mixin.zstd;
 
+import com.github.luben.zstd.ZstdInputStream;
+import com.mojang.datafixers.DataFixer;
+import it.unimi.dsi.fastutil.io.FastBufferedInputStream;
+import net.minecraft.SharedConstants;
+import net.minecraft.datafixer.DataFixTypes;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtHelper;
+import net.minecraft.nbt.NbtIo;
+import net.minecraft.registry.RegistryWrapper;
+import net.minecraft.world.PersistentState;
+import net.minecraft.world.PersistentStateManager;
+import org.slf4j.Logger;
+import org.spongepowered.asm.mixin.Final;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Overwrite;
+import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -9,51 +29,36 @@ import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.zip.GZIPInputStream;
 
-import net.minecraft.registry.RegistryWrapper;
-import org.slf4j.Logger;
-import org.spongepowered.asm.mixin.Final;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Overwrite;
-import org.spongepowered.asm.mixin.Shadow;
-import com.github.luben.zstd.ZstdInputStream;
-import com.mojang.datafixers.DataFixer;
-
-import it.unimi.dsi.fastutil.io.FastBufferedInputStream;
-import net.minecraft.SharedConstants;
-import net.minecraft.datafixer.DataFixTypes;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtHelper;
-import net.minecraft.nbt.NbtIo;
-import net.minecraft.world.PersistentState;
-import net.minecraft.world.PersistentStateManager;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-
 @Mixin(PersistentStateManager.class)
 public abstract class MixinPersistentStateManager {
 
-	@Shadow @Final
+	@Shadow
+	@Final
 	private static Logger LOGGER;
-	
-	@Shadow @Final
-	private File directory;
-	@Shadow @Final
-	private DataFixer dataFixer;
-	@Shadow @Final
-	private Map<String, PersistentState> loadedStates;
 
 	@Shadow
-	private File getFile(String id) { throw new AbstractMethodError(); }
+	@Final
+	private File directory;
+	@Shadow
+	@Final
+	private DataFixer dataFixer;
 
-	@Shadow public abstract NbtCompound readNbt(String id, DataFixTypes dataFixTypes, int currentSaveVersion) throws IOException;
+	@Shadow
+	private File getFile(String id) {
+		throw new AbstractMethodError();
+	}
 
-	@Shadow @Final private RegistryWrapper.WrapperLookup registryLookup;
+	@Shadow
+	public abstract NbtCompound readNbt(String id, DataFixTypes dataFixTypes, int currentSaveVersion) throws IOException;
+
+	@Shadow
+	@Final
+	private RegistryWrapper.WrapperLookup registryLookup;
 
 	private File getZstdFile(String id) {
-		return new File(directory, id+".zat");
+		return new File(directory, id + ".zat");
 	}
-	
+
 	/**
 	 * @author Una
 	 * @reason Don't check file before calling readNbt
@@ -91,7 +96,7 @@ public abstract class MixinPersistentStateManager {
 				return;
 			}
 		}
-		
+
 		try (in) {
 			DataInputStream dis = new DataInputStream(in);
 			NbtCompound nbt = NbtIo.readCompound(dis);
@@ -99,5 +104,5 @@ public abstract class MixinPersistentStateManager {
 			cir.setReturnValue(dataFixTypes == null ? nbt : dataFixTypes.update(dataFixer, nbt, version, dataVersion));
 		}
 	}
-	
+
 }

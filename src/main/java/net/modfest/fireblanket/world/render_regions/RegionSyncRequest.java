@@ -1,41 +1,48 @@
 package net.modfest.fireblanket.world.render_regions;
 
-import java.util.UUID;
-import java.util.function.Function;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
-
-import io.netty.buffer.Unpooled;
 import it.unimi.dsi.fastutil.longs.LongIterator;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.entity.EntityType;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.RegistryByteBuf;
 import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.listener.ClientCommonPacketListener;
 import net.minecraft.network.packet.CustomPayload;
-import net.minecraft.network.packet.Packet;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.util.Identifier;
 import net.modfest.fireblanket.Fireblanket;
+import net.modfest.fireblanket.world.render_regions.RegionSyncRequest.AddRegion;
+import net.modfest.fireblanket.world.render_regions.RegionSyncRequest.AttachBlock;
+import net.modfest.fireblanket.world.render_regions.RegionSyncRequest.AttachEntity;
+import net.modfest.fireblanket.world.render_regions.RegionSyncRequest.DestroyRegion;
+import net.modfest.fireblanket.world.render_regions.RegionSyncRequest.DetachAll;
+import net.modfest.fireblanket.world.render_regions.RegionSyncRequest.DetachBlock;
+import net.modfest.fireblanket.world.render_regions.RegionSyncRequest.DetachEntity;
+import net.modfest.fireblanket.world.render_regions.RegionSyncRequest.FullState;
+import net.modfest.fireblanket.world.render_regions.RegionSyncRequest.FullStateLegacy;
+import net.modfest.fireblanket.world.render_regions.RegionSyncRequest.InvalidCommand;
+import net.modfest.fireblanket.world.render_regions.RegionSyncRequest.RedefineRegion;
+import net.modfest.fireblanket.world.render_regions.RegionSyncRequest.RegistryRegionSyncRequest;
+import net.modfest.fireblanket.world.render_regions.RegionSyncRequest.Reset;
 import net.modfest.fireblanket.world.render_regions.RenderRegion.Mode;
-import net.modfest.fireblanket.world.render_regions.RegionSyncRequest.*;
+
+import java.util.UUID;
+import java.util.function.Function;
 
 public sealed interface RegionSyncRequest extends CustomPayload permits InvalidCommand, FullState, Reset, AddRegion,
-		DestroyRegion, DetachAll, AttachEntity, AttachBlock, DetachEntity, DetachBlock, RedefineRegion, FullStateLegacy,
-		RegistryRegionSyncRequest {
+	DestroyRegion, DetachAll, AttachEntity, AttachBlock, DetachEntity, DetachBlock, RedefineRegion, FullStateLegacy,
+	RegistryRegionSyncRequest {
 
 	CustomPayload.Id<RegionSyncRequest> ID = new CustomPayload.Id<>(Fireblanket.REGIONS_UPDATE);
 
 	PacketCodec<RegistryByteBuf, RegionSyncRequest> CODEC = PacketCodec.of(
-			RegionSyncRequest::toPacket, RegionSyncRequest::read
+		RegionSyncRequest::toPacket, RegionSyncRequest::read
 	);
 
-	public enum RequestType {
+	enum RequestType {
 		INVALID_COMMAND(InvalidCommand::read, "invalid_command"),
 		FULL_STATE_LEGACY(FullStateLegacy::read, "full_state_legacy"),
 		RESET(Reset::read, "reset"),
@@ -61,24 +68,25 @@ public sealed interface RegionSyncRequest extends CustomPayload permits InvalidC
 			this.reader = reader;
 			this.id = Identifier.of("fireblanket", name);
 		}
-		
+
 	}
-	
+
 	RequestType type();
-	
-//  static self read(PacketByteBuf buf);
+
+	//  static self read(PacketByteBuf buf);
 	void write(PacketByteBuf buf);
-	
+
 	void apply(RenderRegions tgt);
-	
+
 	boolean valid();
-	
+
 	sealed interface RegistryRegionSyncRequest<T> extends RegionSyncRequest permits AttachEntityType, DetachEntityType,
-			AttachBlockEntityType, DetachBlockEntityType {
-		
+		AttachBlockEntityType, DetachBlockEntityType {
+
 		Registry<T> registry();
-		
+
 		String name();
+
 		Identifier id();
 
 		@Override
@@ -108,38 +116,38 @@ public sealed interface RegionSyncRequest extends CustomPayload permits InvalidC
 		buf.writeVarInt(r.minX()).writeVarInt(r.minY()).writeVarInt(r.minZ());
 		buf.writeVarInt(r.maxX()).writeVarInt(r.maxY()).writeVarInt(r.maxZ());
 	}
-	
+
 	private static RenderRegion readRegion(PacketByteBuf buf) {
 		int modeId = buf.readUnsignedByte();
 		if (modeId >= Mode.VALUES.size()) {
-			Fireblanket.LOGGER.warn("Unknown region mode id "+modeId);
+			Fireblanket.LOGGER.warn("Unknown region mode id " + modeId);
 			modeId = 0;
 		}
 		Mode mode = Mode.VALUES.get(modeId);
 		return new RenderRegion(buf.readVarInt(), buf.readVarInt(), buf.readVarInt(),
-				buf.readVarInt(), buf.readVarInt(), buf.readVarInt(),
-				mode);
+			buf.readVarInt(), buf.readVarInt(), buf.readVarInt(),
+			mode);
 	}
-	
+
 	private static <T> Identifier readId(PacketByteBuf buf, Registry<T> registry) {
 		return registry.getId(registry.get(buf.readVarInt()));
 	}
-	
+
 	private static <T> void writeId(PacketByteBuf buf, Registry<T> registry, Identifier id) {
 		buf.writeVarInt(registry.getRawId(registry.get(id)));
 	}
-	
+
 	static RegionSyncRequest read(RegistryByteBuf buf) {
 		int tid = buf.readUnsignedByte();
 		if (tid >= RequestType.VALUES.size()) {
-			Fireblanket.LOGGER.warn("Unknown region sync command id "+tid);
+			Fireblanket.LOGGER.warn("Unknown region sync command id " + tid);
 			return new InvalidCommand();
 		}
 		RequestType t = RequestType.VALUES.get(tid);
 		return t.reader.apply(buf);
 	}
-	
-	public record InvalidCommand() implements RegionSyncRequest {
+
+	record InvalidCommand() implements RegionSyncRequest {
 
 		@Override
 		public RequestType type() {
@@ -154,7 +162,7 @@ public sealed interface RegionSyncRequest extends CustomPayload permits InvalidC
 		public static InvalidCommand read(PacketByteBuf buf) {
 			return new InvalidCommand();
 		}
-		
+
 		@Override
 		public void apply(RenderRegions tgt) {
 			Fireblanket.LOGGER.warn("Attempted to apply invalid command");
@@ -164,13 +172,13 @@ public sealed interface RegionSyncRequest extends CustomPayload permits InvalidC
 		public boolean valid() {
 			return false;
 		}
-		
+
 	}
-	
-	public record FullStateLegacy(ImmutableMap<String, RenderRegion> regions,
-			ImmutableMultimap<RenderRegion, UUID> entityAttachments,
-			ImmutableMultimap<RenderRegion, Long> blockAttachments) implements RegionSyncRequest {
-		
+
+	record FullStateLegacy(ImmutableMap<String, RenderRegion> regions,
+	                              ImmutableMultimap<RenderRegion, UUID> entityAttachments,
+	                              ImmutableMultimap<RenderRegion, Long> blockAttachments) implements RegionSyncRequest {
+
 		@Override
 		public RequestType type() {
 			return RequestType.FULL_STATE_LEGACY;
@@ -180,7 +188,7 @@ public sealed interface RegionSyncRequest extends CustomPayload permits InvalidC
 		public void write(PacketByteBuf buf) {
 			throw new UnsupportedOperationException();
 		}
-		
+
 		public static FullStateLegacy read(PacketByteBuf buf) {
 			ImmutableMap.Builder<String, RenderRegion> regionsBldr = ImmutableMap.builder();
 			ImmutableMultimap.Builder<RenderRegion, UUID> entityAttachmentsBldr = ImmutableMultimap.builder();
@@ -201,13 +209,13 @@ public sealed interface RegionSyncRequest extends CustomPayload permits InvalidC
 			}
 			return new FullStateLegacy(regionsBldr.build(), entityAttachmentsBldr.build(), blockAttachmentsBldr.build());
 		}
-		
+
 		@Override
 		public boolean valid() {
 			return regions != null && entityAttachments != null && blockAttachments != null
-					&& !regions.isEmpty();
+				&& !regions.isEmpty();
 		}
-		
+
 		@Override
 		public void apply(RenderRegions tgt) {
 			tgt.clear();
@@ -216,8 +224,8 @@ public sealed interface RegionSyncRequest extends CustomPayload permits InvalidC
 			blockAttachments.forEach(tgt::attachBlock);
 		}
 	}
-	
-	public record Reset(boolean valid) implements RegionSyncRequest {
+
+	record Reset(boolean valid) implements RegionSyncRequest {
 
 		@Override
 		public RequestType type() {
@@ -228,7 +236,7 @@ public sealed interface RegionSyncRequest extends CustomPayload permits InvalidC
 		public void write(PacketByteBuf buf) {
 			buf.writeInt(0xDEADDEAD);
 		}
-		
+
 		public static Reset read(PacketByteBuf buf) {
 			return new Reset(buf.readInt() == 0xDEADDEAD);
 		}
@@ -237,10 +245,10 @@ public sealed interface RegionSyncRequest extends CustomPayload permits InvalidC
 		public void apply(RenderRegions tgt) {
 			tgt.clear();
 		}
-		
+
 	}
-	
-	public record AddRegion(String name, RenderRegion region) implements RegionSyncRequest {
+
+	record AddRegion(String name, RenderRegion region) implements RegionSyncRequest {
 
 		@Override
 		public RequestType type() {
@@ -252,11 +260,11 @@ public sealed interface RegionSyncRequest extends CustomPayload permits InvalidC
 			buf.writeString(name);
 			writeRegion(buf, region);
 		}
-		
+
 		public static AddRegion read(PacketByteBuf buf) {
 			return new AddRegion(buf.readString(), readRegion(buf));
 		}
-		
+
 		@Override
 		public boolean valid() {
 			return name != null && region != null;
@@ -266,10 +274,10 @@ public sealed interface RegionSyncRequest extends CustomPayload permits InvalidC
 		public void apply(RenderRegions tgt) {
 			tgt.add(name, region);
 		}
-		
+
 	}
-	
-	public record DestroyRegion(String name) implements RegionSyncRequest {
+
+	record DestroyRegion(String name) implements RegionSyncRequest {
 
 		@Override
 		public RequestType type() {
@@ -280,11 +288,11 @@ public sealed interface RegionSyncRequest extends CustomPayload permits InvalidC
 		public void write(PacketByteBuf buf) {
 			buf.writeString(name);
 		}
-		
+
 		public static DestroyRegion read(PacketByteBuf buf) {
 			return new DestroyRegion(buf.readString());
 		}
-		
+
 		@Override
 		public boolean valid() {
 			return name != null;
@@ -294,10 +302,10 @@ public sealed interface RegionSyncRequest extends CustomPayload permits InvalidC
 		public void apply(RenderRegions tgt) {
 			tgt.remove(tgt.getByName(name));
 		}
-		
+
 	}
-	
-	public record DetachAll(String name) implements RegionSyncRequest {
+
+	record DetachAll(String name) implements RegionSyncRequest {
 
 		@Override
 		public RequestType type() {
@@ -308,11 +316,11 @@ public sealed interface RegionSyncRequest extends CustomPayload permits InvalidC
 		public void write(PacketByteBuf buf) {
 			buf.writeString(name);
 		}
-		
+
 		public static DetachAll read(PacketByteBuf buf) {
 			return new DetachAll(buf.readString());
 		}
-		
+
 		@Override
 		public boolean valid() {
 			return name != null;
@@ -323,8 +331,8 @@ public sealed interface RegionSyncRequest extends CustomPayload permits InvalidC
 			tgt.detachAll(tgt.getByName(name));
 		}
 	}
-	
-	public record AttachEntity(String name, UUID entity) implements RegionSyncRequest {
+
+	record AttachEntity(String name, UUID entity) implements RegionSyncRequest {
 
 		@Override
 		public RequestType type() {
@@ -336,11 +344,11 @@ public sealed interface RegionSyncRequest extends CustomPayload permits InvalidC
 			buf.writeString(name);
 			buf.writeUuid(entity);
 		}
-		
+
 		public static AttachEntity read(PacketByteBuf buf) {
 			return new AttachEntity(buf.readString(), buf.readUuid());
 		}
-		
+
 		@Override
 		public boolean valid() {
 			return name != null && entity != null;
@@ -350,10 +358,10 @@ public sealed interface RegionSyncRequest extends CustomPayload permits InvalidC
 		public void apply(RenderRegions tgt) {
 			tgt.attachEntity(tgt.getByName(name), entity);
 		}
-		
+
 	}
-	
-	public record AttachBlock(String name, long pos) implements RegionSyncRequest {
+
+	record AttachBlock(String name, long pos) implements RegionSyncRequest {
 
 		@Override
 		public RequestType type() {
@@ -365,7 +373,7 @@ public sealed interface RegionSyncRequest extends CustomPayload permits InvalidC
 			buf.writeString(name);
 			buf.writeLong(pos);
 		}
-		
+
 		public static AttachBlock read(PacketByteBuf buf) {
 			return new AttachBlock(buf.readString(), buf.readLong());
 		}
@@ -374,14 +382,15 @@ public sealed interface RegionSyncRequest extends CustomPayload permits InvalidC
 		public boolean valid() {
 			return name != null;
 		}
+
 		@Override
 		public void apply(RenderRegions tgt) {
 			tgt.attachBlock(tgt.getByName(name), pos);
 		}
-		
+
 	}
-	
-	public record DetachEntity(String name, UUID entity) implements RegionSyncRequest {
+
+	record DetachEntity(String name, UUID entity) implements RegionSyncRequest {
 
 		@Override
 		public RequestType type() {
@@ -393,11 +402,11 @@ public sealed interface RegionSyncRequest extends CustomPayload permits InvalidC
 			buf.writeString(name);
 			buf.writeUuid(entity);
 		}
-		
+
 		public static DetachEntity read(PacketByteBuf buf) {
 			return new DetachEntity(buf.readString(), buf.readUuid());
 		}
-		
+
 		@Override
 		public boolean valid() {
 			return name != null && entity != null;
@@ -407,10 +416,10 @@ public sealed interface RegionSyncRequest extends CustomPayload permits InvalidC
 		public void apply(RenderRegions tgt) {
 			tgt.detachEntity(tgt.getByName(name), entity);
 		}
-		
+
 	}
-	
-	public record DetachBlock(String name, long pos) implements RegionSyncRequest {
+
+	record DetachBlock(String name, long pos) implements RegionSyncRequest {
 
 		@Override
 		public RequestType type() {
@@ -422,11 +431,11 @@ public sealed interface RegionSyncRequest extends CustomPayload permits InvalidC
 			buf.writeString(name);
 			buf.writeLong(pos);
 		}
-		
+
 		public static DetachBlock read(PacketByteBuf buf) {
 			return new DetachBlock(buf.readString(), buf.readLong());
 		}
-		
+
 		@Override
 		public boolean valid() {
 			return name != null;
@@ -436,10 +445,10 @@ public sealed interface RegionSyncRequest extends CustomPayload permits InvalidC
 		public void apply(RenderRegions tgt) {
 			tgt.detachBlock(tgt.getByName(name), pos);
 		}
-		
+
 	}
-	
-	public record RedefineRegion(String name, RenderRegion region) implements RegionSyncRequest {
+
+	record RedefineRegion(String name, RenderRegion region) implements RegionSyncRequest {
 
 		@Override
 		public RequestType type() {
@@ -451,11 +460,11 @@ public sealed interface RegionSyncRequest extends CustomPayload permits InvalidC
 			buf.writeString(name);
 			writeRegion(buf, region);
 		}
-		
+
 		public static RedefineRegion read(PacketByteBuf buf) {
 			return new RedefineRegion(buf.readString(), readRegion(buf));
 		}
-		
+
 		@Override
 		public boolean valid() {
 			return name != null && region != null;
@@ -465,21 +474,21 @@ public sealed interface RegionSyncRequest extends CustomPayload permits InvalidC
 		public void apply(RenderRegions tgt) {
 			tgt.redefine(name, region);
 		}
-		
+
 	}
-	
-	public record AttachEntityType(String name, Identifier id) implements RegistryRegionSyncRequest<EntityType<?>> {
+
+	record AttachEntityType(String name, Identifier id) implements RegistryRegionSyncRequest<EntityType<?>> {
 
 		@Override
 		public RequestType type() {
 			return RequestType.ATTACH_ENTITY_TYPE;
 		}
-		
+
 		@Override
 		public Registry<EntityType<?>> registry() {
 			return Registries.ENTITY_TYPE;
 		}
-		
+
 		public static AttachEntityType read(PacketByteBuf buf) {
 			return new AttachEntityType(buf.readString(), readId(buf, Registries.ENTITY_TYPE));
 		}
@@ -488,21 +497,21 @@ public sealed interface RegionSyncRequest extends CustomPayload permits InvalidC
 		public void apply(RenderRegions tgt) {
 			tgt.attachEntityType(tgt.getByName(name), id);
 		}
-		
+
 	}
-	
-	public record DetachEntityType(String name, Identifier id) implements RegistryRegionSyncRequest<EntityType<?>> {
+
+	record DetachEntityType(String name, Identifier id) implements RegistryRegionSyncRequest<EntityType<?>> {
 
 		@Override
 		public RequestType type() {
 			return RequestType.DETACH_ENTITY_TYPE;
 		}
-		
+
 		@Override
 		public Registry<EntityType<?>> registry() {
 			return Registries.ENTITY_TYPE;
 		}
-		
+
 		public static DetachEntityType read(PacketByteBuf buf) {
 			return new DetachEntityType(buf.readString(), readId(buf, Registries.ENTITY_TYPE));
 		}
@@ -511,21 +520,21 @@ public sealed interface RegionSyncRequest extends CustomPayload permits InvalidC
 		public void apply(RenderRegions tgt) {
 			tgt.detachEntityType(tgt.getByName(name), id);
 		}
-		
+
 	}
-	
-	public record AttachBlockEntityType(String name, Identifier id) implements RegistryRegionSyncRequest<BlockEntityType<?>> {
+
+	record AttachBlockEntityType(String name, Identifier id) implements RegistryRegionSyncRequest<BlockEntityType<?>> {
 
 		@Override
 		public RequestType type() {
 			return RequestType.ATTACH_BLOCK_ENTITY_TYPE;
 		}
-		
+
 		@Override
 		public Registry<BlockEntityType<?>> registry() {
 			return Registries.BLOCK_ENTITY_TYPE;
 		}
-		
+
 		public static AttachBlockEntityType read(PacketByteBuf buf) {
 			return new AttachBlockEntityType(buf.readString(), readId(buf, Registries.BLOCK_ENTITY_TYPE));
 		}
@@ -534,21 +543,21 @@ public sealed interface RegionSyncRequest extends CustomPayload permits InvalidC
 		public void apply(RenderRegions tgt) {
 			tgt.attachBlockEntityType(tgt.getByName(name), id);
 		}
-		
+
 	}
-	
-	public record DetachBlockEntityType(String name, Identifier id) implements RegistryRegionSyncRequest<BlockEntityType<?>> {
+
+	record DetachBlockEntityType(String name, Identifier id) implements RegistryRegionSyncRequest<BlockEntityType<?>> {
 
 		@Override
 		public RequestType type() {
 			return RequestType.DETACH_BLOCK_ENTITY_TYPE;
 		}
-		
+
 		@Override
 		public Registry<BlockEntityType<?>> registry() {
 			return Registries.BLOCK_ENTITY_TYPE;
 		}
-		
+
 		public static DetachBlockEntityType read(PacketByteBuf buf) {
 			return new DetachBlockEntityType(buf.readString(), readId(buf, Registries.BLOCK_ENTITY_TYPE));
 		}
@@ -557,11 +566,11 @@ public sealed interface RegionSyncRequest extends CustomPayload permits InvalidC
 		public void apply(RenderRegions tgt) {
 			tgt.detachBlockEntityType(tgt.getByName(name), id);
 		}
-		
+
 	}
-	
-	public record FullState(ImmutableList<ExplainedRenderRegion> regions) implements RegionSyncRequest {
-		
+
+	record FullState(ImmutableList<ExplainedRenderRegion> regions) implements RegionSyncRequest {
+
 		@Override
 		public RequestType type() {
 			return RequestType.FULL_STATE;
@@ -598,14 +607,14 @@ public sealed interface RegionSyncRequest extends CustomPayload permits InvalidC
 				for (Identifier id : bet) {
 					writeId(buf, Registries.BLOCK_ENTITY_TYPE, id);
 				}
-				int len = buf.writerIndex()-start;
+				int len = buf.writerIndex() - start;
 				buf.markWriterIndex();
 				buf.writerIndex(sizePos);
 				buf.writeMedium(len);
 				buf.resetWriterIndex();
 			}
 		}
-		
+
 		public static FullState read(PacketByteBuf buf) {
 			ImmutableList.Builder<ExplainedRenderRegion> bldr = ImmutableList.builder();
 			int regionCount = buf.readVarInt();
@@ -631,17 +640,17 @@ public sealed interface RegionSyncRequest extends CustomPayload permits InvalidC
 				for (int j = 0; j < beTypeCount; j++) {
 					ex.beTypeAttachments.add(readId(buf, Registries.BLOCK_ENTITY_TYPE));
 				}
-				buf.readerIndex(start+len);
+				buf.readerIndex(start + len);
 				bldr.add(ex);
 			}
 			return new FullState(bldr.build());
 		}
-		
+
 		@Override
 		public boolean valid() {
 			return regions != null && !regions.isEmpty();
 		}
-		
+
 		@Override
 		public void apply(RenderRegions tgt) {
 			tgt.clear();
@@ -654,5 +663,5 @@ public sealed interface RegionSyncRequest extends CustomPayload permits InvalidC
 			}
 		}
 	}
-	
+
 }

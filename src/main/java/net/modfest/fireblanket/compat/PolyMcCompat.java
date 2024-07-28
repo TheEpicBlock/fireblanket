@@ -12,5 +12,5 @@ public class PolyMcCompat {
 			return polyPlayer != null && Util.tryGetPolyMap(polyPlayer).isVanillaLikeMap();
 		};
 	}
-	
+
 }

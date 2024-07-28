@@ -32,9 +32,9 @@ import net.modfest.fireblanket.world.render_regions.RegionSyncRequest;
 import net.modfest.fireblanket.world.render_regions.RenderRegions;
 
 public class FireblanketClient implements ClientModInitializer {
-	
+
 	public static final RenderRegions renderRegions = new RenderRegions();
-	
+
 	@Override
 	public void onInitializeClient() {
 		ClientCommandRegistrationCallback.EVENT.register((dispatcher, access) -> {
@@ -49,12 +49,12 @@ public class FireblanketClient implements ClientModInitializer {
 				base.then(mask);
 			}
 			dispatcher.register(ClientCommandManager.literal("fbc")
-					.redirect(dispatcher.register(base)));
+				.redirect(dispatcher.register(base)));
 		});
 
 		ClientLoginNetworking.registerGlobalReceiver(Fireblanket.FULL_STREAM_COMPRESSION, (client, handler, buf, listenerAdder) -> {
 			if (Fireblanket.CAN_USE_ZSTD) {
-				((FSCConnection)((ClientLoginNetworkHandlerAccessor)handler).fireblanket$getConnection()).fireblanket$enableFullStreamCompression();
+				((FSCConnection) ((ClientLoginNetworkHandlerAccessor) handler).fireblanket$getConnection()).fireblanket$enableFullStreamCompression();
 				return CompletableFuture.completedFuture(PacketByteBufs.empty());
 			} else {
 				return CompletableFuture.completedFuture(null);
@@ -79,11 +79,9 @@ public class FireblanketClient implements ClientModInitializer {
 		ClientPlayNetworking.registerGlobalReceiver(CommandBlockPacket.ID, (payload, ctx) -> {
 			ctx.client().execute(() -> MinecraftClient.getInstance().setScreen(new PlaceCommandBlockScreen()));
 		});
-		
+
 		ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
-			client.send(() -> {
-				renderRegions.clear();
-			});
+			client.send(renderRegions::clear);
 		});
 	}
 
@@ -102,5 +100,5 @@ public class FireblanketClient implements ClientModInitializer {
 		Vec3d c = mc.gameRenderer.getCamera().getPos();
 		return c;
 	}
-	
+
 }

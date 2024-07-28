@@ -1,12 +1,12 @@
 package net.modfest.fireblanket.world.render_regions;
 
-import java.util.Set;
-import java.util.UUID;
-
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraft.util.Identifier;
+
+import java.util.Set;
+import java.util.UUID;
 
 public class ExplainedRenderRegion {
 
@@ -14,17 +14,17 @@ public class ExplainedRenderRegion {
 	public final RenderRegion reg;
 
 	public boolean blanketDeny;
-	
+
 	public final Set<UUID> entityAttachments = new ObjectOpenHashSet<>();
 	public final LongSet blockAttachments = new LongOpenHashSet();
 	public final Set<Identifier> entityTypeAttachments = new ObjectOpenHashSet<>();
 	public final Set<Identifier> beTypeAttachments = new ObjectOpenHashSet<>();
-	
+
 	public ExplainedRenderRegion(String name, RenderRegion reg) {
 		this.name = name;
 		this.reg = reg;
 	}
-	
+
 	public ExplainedRenderRegion copy() {
 		ExplainedRenderRegion nw = new ExplainedRenderRegion(name, reg);
 		nw.blanketDeny = blanketDeny;
@@ -34,5 +34,5 @@ public class ExplainedRenderRegion {
 		nw.beTypeAttachments.addAll(beTypeAttachments);
 		return nw;
 	}
-	
+
 }

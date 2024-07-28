@@ -36,52 +36,52 @@ public class FireblanketMixin implements IMixinConfigPlugin {
 		}
 		if (!ignoreRenderingMods && FabricLoader.getInstance().isModLoaded("nvidium")) {
 			Bootstrap.SYSOUT.println("""
-			----------------------------------------------------------------------------------------
-			###### Fireblanket is cowardly refusing to launch the game with Nvidium installed ######
-			----------------------------------------------------------------------------------------
-			   Due to the amount of mods that change  how rendering works, Nvidium can experience
-			random crashes and other hard to debug issues. From testing in the build server, Nvidium
-			  doesn't have a lot  of impact on the types of fps lag that the pack causes. As such,
-				  it is not recommended to use  Nvidium with Blanketcon for stability reasons.
-			========================================================================================
-			If you would like to ignore these warnings and launch anyway, you must add the following
-			to your JVM arguments:
-			   -Dfireblanket.iSolemnlySwearIWillNotReportRenderingCrashesAndAcceptResponsibilityForBreakage=true
-			The JVM will now exit.
-			""");
+				----------------------------------------------------------------------------------------
+				###### Fireblanket is cowardly refusing to launch the game with Nvidium installed ######
+				----------------------------------------------------------------------------------------
+				   Due to the amount of mods that change  how rendering works, Nvidium can experience
+				random crashes and other hard to debug issues. From testing in the build server, Nvidium
+				  doesn't have a lot  of impact on the types of fps lag that the pack causes. As such,
+					  it is not recommended to use  Nvidium with Blanketcon for stability reasons.
+				========================================================================================
+				If you would like to ignore these warnings and launch anyway, you must add the following
+				to your JVM arguments:
+				   -Dfireblanket.iSolemnlySwearIWillNotReportRenderingCrashesAndAcceptResponsibilityForBreakage=true
+				The JVM will now exit.
+				""");
 			System.exit(0xDEAD);
 		}
 		if (FabricLoader.getInstance().isModLoaded("entityculling")) {
 			Bootstrap.SYSOUT.println("""
-			----------------------------------------------------------------------------------------
-			### Fireblanket is cowardly refusing to launch the game with EntityCulling installed ###
-			----------------------------------------------------------------------------------------
-			  EntityCulling causes performance issues and hard-to-debug crashes due to poor use of
-			  threading. Sodium's entity culling is already enabled to optimize this behavior, and
-			  Fireblanket contains additional fixes and  optimizations for entities that are tuned
-										  specifically for Blanketcon.
-			========================================================================================
-			You may not override this. The JVM will now exit.
-			""");
+				----------------------------------------------------------------------------------------
+				### Fireblanket is cowardly refusing to launch the game with EntityCulling installed ###
+				----------------------------------------------------------------------------------------
+				  EntityCulling causes performance issues and hard-to-debug crashes due to poor use of
+				  threading. Sodium's entity culling is already enabled to optimize this behavior, and
+				  Fireblanket contains additional fixes and  optimizations for entities that are tuned
+											  specifically for Blanketcon.
+				========================================================================================
+				You may not override this. The JVM will now exit.
+				""");
 			System.exit(0xDEAD);
 		}
 		if (!ignoreRenderingMods && FabricLoader.getInstance().isModLoaded("bobby")) {
 			Bootstrap.SYSOUT.println("""
-			----------------------------------------------------------------------------------------
-			####### Fireblanket is cowardly refusing to launch the game with Bobby installed #######
-			----------------------------------------------------------------------------------------
-			   While Bobby can make navigating the map easier,  it is causing difficult to debug
-			issues with chunk culling that keep resulting in false issue reports.  We do not ship it
-			 with the pack for a reason — we have had so many other issues to chase and fix that we
-			simply do not  have time to field the Bobby issues. It additionally can cause crashes if
-				 its option to keep block entities in  fake chunks is not enabled, so it is not
-								 recommended for use due  to stability reasons.
-			========================================================================================
-			If you would like to ignore these warnings and launch anyway, you must add the following
-			to your JVM arguments:
-			   -Dfireblanket.iSolemnlySwearIWillNotReportRenderingCrashesAndAcceptResponsibilityForBreakage=true
-			The JVM will now exit.
-			""");
+				----------------------------------------------------------------------------------------
+				####### Fireblanket is cowardly refusing to launch the game with Bobby installed #######
+				----------------------------------------------------------------------------------------
+				   While Bobby can make navigating the map easier,  it is causing difficult to debug
+				issues with chunk culling that keep resulting in false issue reports.  We do not ship it
+				 with the pack for a reason — we have had so many other issues to chase and fix that we
+				simply do not  have time to field the Bobby issues. It additionally can cause crashes if
+					 its option to keep block entities in  fake chunks is not enabled, so it is not
+									 recommended for use due  to stability reasons.
+				========================================================================================
+				If you would like to ignore these warnings and launch anyway, you must add the following
+				to your JVM arguments:
+				   -Dfireblanket.iSolemnlySwearIWillNotReportRenderingCrashesAndAcceptResponsibilityForBreakage=true
+				The JVM will now exit.
+				""");
 			System.exit(0xDEAD);
 		}
 	}
@@ -100,7 +100,7 @@ public class FireblanketMixin implements IMixinConfigPlugin {
 		if (mixinClassName.contains("region_chunk_cache")) {
 			return DO_CHUNK_CACHE;
 		}
-		
+
 		if (mixinClassName.contains("lambdamap")) {
 			return !ALLOW_LAMBDAMAP_SAVING;
 		}
@@ -116,13 +116,9 @@ public class FireblanketMixin implements IMixinConfigPlugin {
 		if (mixinClassName.contains("footgun")) {
 			return !ALLOW_FOOTGUNS;
 		}
-		
-		if (mixinClassName.contains("SplitterHandler") && FabricLoader.getInstance().isModLoaded("krypton")) {
-			// Conflicts with Krypton, which also lifts the limit
-			return false;
-		}
 
-		return true;
+		// Conflicts with Krypton, which also lifts the limit
+		return !mixinClassName.contains("SplitterHandler") || !FabricLoader.getInstance().isModLoaded("krypton");
 	}
 
 	@Override
@@ -136,12 +132,12 @@ public class FireblanketMixin implements IMixinConfigPlugin {
 
 	@Override
 	public void preApply(String targetClassName, ClassNode targetClass, String mixinClassName, IMixinInfo mixinInfo) {
-		
+
 	}
 
 	@Override
 	public void postApply(String targetClassName, ClassNode targetClass, String mixinClassName, IMixinInfo mixinInfo) {
-		
+
 	}
 
 }

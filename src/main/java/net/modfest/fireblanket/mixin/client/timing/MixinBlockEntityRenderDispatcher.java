@@ -1,15 +1,12 @@
 package net.modfest.fireblanket.mixin.client.timing;
 
 import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.block.entity.BlockEntityRenderDispatcher;
 import net.minecraft.client.render.debug.DebugRenderer;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.BlockPos;
 import net.modfest.fireblanket.client.ClientState;
-import net.modfest.fireblanket.client.render.QuadEmitter;
-import net.modfest.fireblanket.client.render.RenderLayers;
 import net.modfest.fireblanket.mixinsupport.ObservableTicks;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -34,10 +31,10 @@ public class MixinBlockEntityRenderDispatcher {
 			}
 
 			DebugRenderer.drawString(matrices, vertexConsumers, s,
-					pos.getX() + 0.5,
-					pos.getY() + 0.5,
-					pos.getZ() + 0.5,
-					color, 0.03F, true, 0, true);
+				pos.getX() + 0.5,
+				pos.getY() + 0.5,
+				pos.getZ() + 0.5,
+				color, 0.03F, true, 0, true);
 		}
 	}
 }

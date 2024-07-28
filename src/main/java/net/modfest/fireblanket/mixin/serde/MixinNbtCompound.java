@@ -25,20 +25,24 @@ import java.util.Map;
 @Mixin(NbtCompound.class)
 public abstract class MixinNbtCompound {
 	@Mutable
-	@Shadow @Final private Map<String, NbtElement> entries;
+	@Shadow
+	@Final
+	private Map<String, NbtElement> entries;
 
-	@Shadow protected abstract CrashReport createCrashReport(String key, NbtType<?> reader, ClassCastException exception);
+	@Shadow
+	protected abstract CrashReport createCrashReport(String key, NbtType<?> reader, ClassCastException exception);
 
-	@Shadow @Final public static NbtType<NbtCompound> TYPE;
+	@Shadow
+	@Final
+	public static NbtType<NbtCompound> TYPE;
 
 	@Inject(method = "<init>(Ljava/util/Map;)V", at = @At("TAIL"))
-	private void fireblanket$betterMap(Map entries, CallbackInfo ci) {
+	private void fireblanket$betterMap(Map<String, NbtElement> entries, CallbackInfo ci) {
 		this.entries = new Object2ObjectOpenHashMap<>(entries);
 	}
 
 	/**
 	 * @author Jasmine
-	 *
 	 * @reason Remove unnecessary map lookup
 	 */
 	@Overwrite
@@ -46,9 +50,9 @@ public abstract class MixinNbtCompound {
 		try {
 			NbtElement nbt = this.entries.get(key);
 			if (contains(nbt, NbtElement.NUMBER_TYPE)) {
-				return ((AbstractNbtNumber)nbt).byteValue();
+				return ((AbstractNbtNumber) nbt).byteValue();
 			}
-		} catch (ClassCastException var3) {
+		} catch (ClassCastException ignored) {
 		}
 
 		return 0;
@@ -56,7 +60,6 @@ public abstract class MixinNbtCompound {
 
 	/**
 	 * @author Jasmine
-	 *
 	 * @reason Remove unnecessary map lookup
 	 */
 	@Overwrite
@@ -64,9 +67,9 @@ public abstract class MixinNbtCompound {
 		try {
 			NbtElement nbt = this.entries.get(key);
 			if (contains(nbt, NbtElement.NUMBER_TYPE)) {
-				return ((AbstractNbtNumber)nbt).shortValue();
+				return ((AbstractNbtNumber) nbt).shortValue();
 			}
-		} catch (ClassCastException var3) {
+		} catch (ClassCastException ignored) {
 		}
 
 		return 0;
@@ -74,7 +77,6 @@ public abstract class MixinNbtCompound {
 
 	/**
 	 * @author Jasmine
-	 *
 	 * @reason Remove unnecessary map lookup
 	 */
 	@Overwrite
@@ -82,9 +84,9 @@ public abstract class MixinNbtCompound {
 		try {
 			NbtElement nbt = this.entries.get(key);
 			if (contains(nbt, NbtElement.NUMBER_TYPE)) {
-				return ((AbstractNbtNumber)nbt).intValue();
+				return ((AbstractNbtNumber) nbt).intValue();
 			}
-		} catch (ClassCastException var3) {
+		} catch (ClassCastException ignored) {
 		}
 
 		return 0;
@@ -92,7 +94,6 @@ public abstract class MixinNbtCompound {
 
 	/**
 	 * @author Jasmine
-	 *
 	 * @reason Remove unnecessary map lookup
 	 */
 	@Overwrite
@@ -100,9 +101,9 @@ public abstract class MixinNbtCompound {
 		try {
 			NbtElement nbt = this.entries.get(key);
 			if (contains(nbt, NbtElement.NUMBER_TYPE)) {
-				return ((AbstractNbtNumber)nbt).longValue();
+				return ((AbstractNbtNumber) nbt).longValue();
 			}
-		} catch (ClassCastException var3) {
+		} catch (ClassCastException ignored) {
 		}
 
 		return 0L;
@@ -110,7 +111,6 @@ public abstract class MixinNbtCompound {
 
 	/**
 	 * @author Jasmine
-	 *
 	 * @reason Remove unnecessary map lookup
 	 */
 	@Overwrite
@@ -118,9 +118,9 @@ public abstract class MixinNbtCompound {
 		try {
 			NbtElement nbt = this.entries.get(key);
 			if (contains(nbt, NbtElement.NUMBER_TYPE)) {
-				return ((AbstractNbtNumber)nbt).floatValue();
+				return ((AbstractNbtNumber) nbt).floatValue();
 			}
-		} catch (ClassCastException var3) {
+		} catch (ClassCastException ignored) {
 		}
 
 		return 0.0F;
@@ -128,7 +128,6 @@ public abstract class MixinNbtCompound {
 
 	/**
 	 * @author Jasmine
-	 *
 	 * @reason Remove unnecessary map lookup
 	 */
 	@Overwrite
@@ -136,9 +135,9 @@ public abstract class MixinNbtCompound {
 		try {
 			NbtElement nbt = this.entries.get(key);
 			if (contains(nbt, NbtElement.NUMBER_TYPE)) {
-				return ((AbstractNbtNumber)nbt).doubleValue();
+				return ((AbstractNbtNumber) nbt).doubleValue();
 			}
-		} catch (ClassCastException var3) {
+		} catch (ClassCastException ignored) {
 		}
 
 		return 0.0;
@@ -146,7 +145,6 @@ public abstract class MixinNbtCompound {
 
 	/**
 	 * @author Jasmine
-	 *
 	 * @reason Remove unnecessary map lookup
 	 */
 	@Overwrite
@@ -154,9 +152,9 @@ public abstract class MixinNbtCompound {
 		try {
 			NbtElement nbt = this.entries.get(key);
 			if (contains(nbt, NbtElement.STRING_TYPE)) {
-				return ((NbtElement)nbt).asString();
+				return nbt.asString();
 			}
-		} catch (ClassCastException var3) {
+		} catch (ClassCastException ignored) {
 		}
 
 		return "";
@@ -164,7 +162,6 @@ public abstract class MixinNbtCompound {
 
 	/**
 	 * @author Jasmine
-	 *
 	 * @reason Remove unnecessary map lookup
 	 */
 	@Overwrite
@@ -172,7 +169,7 @@ public abstract class MixinNbtCompound {
 		try {
 			NbtElement nbt = this.entries.get(key);
 			if (contains(nbt, NbtElement.BYTE_ARRAY_TYPE)) {
-				return ((NbtByteArray)nbt).getByteArray();
+				return ((NbtByteArray) nbt).getByteArray();
 			}
 		} catch (ClassCastException var3) {
 			throw new CrashException(this.createCrashReport(key, NbtByteArray.TYPE, var3));
@@ -183,7 +180,6 @@ public abstract class MixinNbtCompound {
 
 	/**
 	 * @author Jasmine
-	 *
 	 * @reason Remove unnecessary map lookup
 	 */
 	@Overwrite
@@ -191,7 +187,7 @@ public abstract class MixinNbtCompound {
 		try {
 			NbtElement nbt = this.entries.get(key);
 			if (contains(nbt, NbtElement.INT_ARRAY_TYPE)) {
-				return ((NbtIntArray)nbt).getIntArray();
+				return ((NbtIntArray) nbt).getIntArray();
 			}
 		} catch (ClassCastException var3) {
 			throw new CrashException(this.createCrashReport(key, NbtIntArray.TYPE, var3));
@@ -202,7 +198,6 @@ public abstract class MixinNbtCompound {
 
 	/**
 	 * @author Jasmine
-	 *
 	 * @reason Remove unnecessary map lookup
 	 */
 	@Overwrite
@@ -210,7 +205,7 @@ public abstract class MixinNbtCompound {
 		try {
 			NbtElement nbt = this.entries.get(key);
 			if (contains(nbt, NbtElement.LONG_ARRAY_TYPE)) {
-				return ((NbtLongArray)nbt).getLongArray();
+				return ((NbtLongArray) nbt).getLongArray();
 			}
 		} catch (ClassCastException var3) {
 			throw new CrashException(this.createCrashReport(key, NbtLongArray.TYPE, var3));
@@ -221,7 +216,6 @@ public abstract class MixinNbtCompound {
 
 	/**
 	 * @author Jasmine
-	 *
 	 * @reason Remove unnecessary map lookup
 	 */
 	@Overwrite
@@ -240,7 +234,6 @@ public abstract class MixinNbtCompound {
 
 	/**
 	 * @author Jasmine
-	 *
 	 * @reason Remove unnecessary map lookup
 	 */
 	@Overwrite
@@ -249,7 +242,7 @@ public abstract class MixinNbtCompound {
 			NbtElement nbt = this.entries.get(key);
 
 			if (nbt != null && nbt.getType() == NbtElement.LIST_TYPE) {
-				NbtList nbtList = (NbtList)nbt;
+				NbtList nbtList = (NbtList) nbt;
 
 				if (!nbtList.isEmpty() && nbtList.getHeldType() != type) {
 					return new NbtList();
@@ -273,11 +266,11 @@ public abstract class MixinNbtCompound {
 			return false;
 		} else {
 			return i == NbtElement.BYTE_TYPE
-					|| i == NbtElement.SHORT_TYPE
-					|| i == NbtElement.INT_TYPE
-					|| i == NbtElement.LONG_TYPE
-					|| i == NbtElement.FLOAT_TYPE
-					|| i == NbtElement.DOUBLE_TYPE;
+				|| i == NbtElement.SHORT_TYPE
+				|| i == NbtElement.INT_TYPE
+				|| i == NbtElement.LONG_TYPE
+				|| i == NbtElement.FLOAT_TYPE
+				|| i == NbtElement.DOUBLE_TYPE;
 		}
 	}
 }

@@ -1,57 +1,44 @@
 package net.modfest.fireblanket.mixin.fsc;
 
-import java.io.IOException;
-import java.io.UncheckedIOException;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
-
+import io.netty.channel.Channel;
+import net.minecraft.network.ClientConnection;
+import net.minecraft.network.PacketCallbacks;
 import net.minecraft.network.listener.PacketListener;
+import net.minecraft.network.packet.Packet;
+import net.modfest.fireblanket.Fireblanket;
+import net.modfest.fireblanket.Fireblanket.QueuedPacket;
+import net.modfest.fireblanket.mixinsupport.FSCConnection;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.Redirect;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import com.github.luben.zstd.ZstdOutputStream;
-
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelPipeline;
-import net.minecraft.network.ClientConnection;
-import net.minecraft.network.NetworkSide;
-import net.minecraft.network.NetworkState;
-import net.minecraft.network.PacketCallbacks;
-import net.minecraft.network.packet.Packet;
-import net.minecraft.network.packet.s2c.play.GameJoinS2CPacket;
-import net.modfest.fireblanket.Fireblanket;
-import net.modfest.fireblanket.util.ReassignableOutputStream;
-import net.modfest.fireblanket.Fireblanket.QueuedPacket;
-import net.modfest.fireblanket.mixinsupport.FSCConnection;
-import net.modfest.fireblanket.net.ZstdDecoder;
-import net.modfest.fireblanket.net.ZstdEncoder;
+import java.util.concurrent.LinkedBlockingQueue;
 
 @Mixin(ClientConnection.class)
 public abstract class MixinClientConnection implements FSCConnection {
 
 	@Shadow
 	private Channel channel;
-	
+
 	@Shadow
-	private void sendImmediately(Packet<?> packet, PacketCallbacks callbacks, boolean flush) { throw new AbstractMethodError(); }
+	private void sendImmediately(Packet<?> packet, PacketCallbacks callbacks, boolean flush) {
+		throw new AbstractMethodError();
+	}
 
-	@Shadow private volatile @Nullable PacketListener packetListener;
+	@Shadow
+	private volatile @Nullable PacketListener packetListener;
 
-	@Shadow public abstract void flush();
+	@Shadow
+	public abstract void flush();
 
 	private final LinkedBlockingQueue<QueuedPacket> fireblanket$queue = Fireblanket.getNextQueue();
-	private boolean fireblanket$fsc = false;
-	private boolean fireblanket$fscStarted = false;
-	
+	private final boolean fireblanket$fsc = false;
+	private final boolean fireblanket$fscStarted = false;
+
 	/**
 	 * With a lot of connections, simply the act of writing packets becomes slow.
 	 * Doing this on the server thread reduces TPS for no good reason.
-	 * 
+	 *
 	 * The client already does networking roughly like this, so the protocol stack is already
 	 * designed to expect this behavior.
 	 */
@@ -108,5 +95,5 @@ public abstract class MixinClientConnection implements FSCConnection {
 //	public void fireblanket$enableFullStreamCompression() {
 //		fireblanket$fsc = true;
 //	}
-	
+
 }

@@ -16,12 +16,15 @@ import java.util.function.Predicate;
 
 @Mixin(EntitySelectorOptions.class)
 public abstract class MixinEntitySelectorOptions {
-	@Shadow private static void putOption(String id, EntitySelectorOptions.SelectorHandler handler, Predicate<EntitySelectorReader> condition, Text description) {
+	@Shadow
+	private static void putOption(String id, EntitySelectorOptions.SelectorHandler handler, Predicate<EntitySelectorReader> condition, Text description) {
 		throw new IllegalStateException("Unimplemented mixin");
 	}
 
 	@SuppressWarnings("rawtypes")
-	@Shadow @Final private static Map OPTIONS;
+	@Shadow
+	@Final
+	private static Map OPTIONS;
 
 	@Inject(method = "register", at = @At("TAIL"))
 	private static void injectForce(CallbackInfo info) {

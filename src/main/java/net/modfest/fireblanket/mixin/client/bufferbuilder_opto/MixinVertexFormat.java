@@ -1,18 +1,8 @@
 package net.modfest.fireblanket.mixin.client.bufferbuilder_opto;
 
-import org.spongepowered.asm.mixin.Final;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-
 import net.minecraft.client.render.VertexFormat;
-import net.minecraft.client.render.VertexFormatElement;
 import net.modfest.fireblanket.client.render.ExtendedVertexFormat;
+import org.spongepowered.asm.mixin.Mixin;
 
 @Mixin(VertexFormat.class)
 public abstract class MixinVertexFormat implements ExtendedVertexFormat {
