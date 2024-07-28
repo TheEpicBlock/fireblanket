@@ -2,7 +2,6 @@ package net.modfest.fireblanket;
 
 import com.google.common.base.Stopwatch;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import net.fabricmc.api.EnvType;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.entity.event.v1.ServerEntityWorldChangeEvents;
@@ -187,24 +186,6 @@ public class Fireblanket implements ModInitializer {
 		ServerEntityWorldChangeEvents.AFTER_PLAYER_CHANGE_WORLD.register((player, origin, destination) -> {
 			fullRegionSync(player.getServerWorld(), player.networkHandler::sendPacket);
 		});
-
-		if (FabricLoader.getInstance().getEnvironmentType() == EnvType.SERVER) {
-			Runnable desperateMeasures = () -> {
-				while (true) {
-					try {
-						Thread.sleep(1000);
-					} catch (InterruptedException e) {
-
-					}
-
-					System.gc();
-				}
-			};
-
-			Thread desperateTimes = new Thread(desperateMeasures);
-
-			desperateTimes.start();
-		}
 	}
 
 	public static void fullRegionSync(ServerWorld world, Consumer<Packet<?>> sender) {
