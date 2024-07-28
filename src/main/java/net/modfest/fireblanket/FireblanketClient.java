@@ -1,9 +1,6 @@
 package net.modfest.fireblanket;
 
-import java.util.concurrent.CompletableFuture;
-
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
@@ -30,6 +27,8 @@ import net.modfest.fireblanket.net.BatchedBEUpdatePayload;
 import net.modfest.fireblanket.net.CommandBlockPacket;
 import net.modfest.fireblanket.world.render_regions.RegionSyncRequest;
 import net.modfest.fireblanket.world.render_regions.RenderRegions;
+
+import java.util.concurrent.CompletableFuture;
 
 public class FireblanketClient implements ClientModInitializer {
 

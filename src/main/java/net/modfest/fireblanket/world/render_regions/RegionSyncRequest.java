@@ -175,9 +175,7 @@ public sealed interface RegionSyncRequest extends CustomPayload permits InvalidC
 
 	}
 
-	record FullStateLegacy(ImmutableMap<String, RenderRegion> regions,
-	                              ImmutableMultimap<RenderRegion, UUID> entityAttachments,
-	                              ImmutableMultimap<RenderRegion, Long> blockAttachments) implements RegionSyncRequest {
+	record FullStateLegacy(ImmutableMap<String, RenderRegion> regions, ImmutableMultimap<RenderRegion, UUID> entityAttachments, ImmutableMultimap<RenderRegion, Long> blockAttachments) implements RegionSyncRequest {
 
 		@Override
 		public RequestType type() {

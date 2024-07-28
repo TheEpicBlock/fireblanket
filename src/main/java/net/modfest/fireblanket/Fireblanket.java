@@ -1,13 +1,14 @@
 package net.modfest.fireblanket;
 
+import com.google.common.base.Stopwatch;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.ModInitializer;
-
-import net.fabricmc.fabric.api.event.registry.RegistryEntryAddedCallback;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.entity.event.v1.ServerEntityWorldChangeEvents;
 import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
+import net.fabricmc.fabric.api.event.registry.RegistryEntryAddedCallback;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerLoginConnectionEvents;
@@ -15,11 +16,10 @@ import net.fabricmc.fabric.api.networking.v1.ServerLoginNetworking;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.block.Block;
 import net.minecraft.network.ClientConnection;
 import net.minecraft.network.PacketCallbacks;
-import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.network.packet.Packet;
-import net.minecraft.block.Block;
 import net.minecraft.registry.Registries;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
@@ -34,22 +34,17 @@ import net.modfest.fireblanket.command.RegionCommand;
 import net.modfest.fireblanket.compat.PolyMcCompat;
 import net.modfest.fireblanket.mixin.accessor.ClientConnectionAccessor;
 import net.modfest.fireblanket.mixin.accessor.ServerChunkManagerAccessor;
+import net.modfest.fireblanket.mixin.accessor.ServerLoginNetworkHandlerAccessor;
+import net.modfest.fireblanket.mixinsupport.FSCConnection;
 import net.modfest.fireblanket.net.BatchedBEUpdatePayload;
 import net.modfest.fireblanket.net.CommandBlockPacket;
 import net.modfest.fireblanket.world.blocks.UpdateSignBlockEntityTypes;
-import net.modfest.fireblanket.mixin.accessor.ServerLoginNetworkHandlerAccessor;
-import net.modfest.fireblanket.mixinsupport.FSCConnection;
+import net.modfest.fireblanket.world.entity.EntityFilters;
 import net.modfest.fireblanket.world.render_regions.RegionSyncRequest;
 import net.modfest.fireblanket.world.render_regions.RenderRegions;
 import net.modfest.fireblanket.world.render_regions.RenderRegionsState;
-import net.modfest.fireblanket.world.entity.EntityFilters;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-
-import com.google.common.base.Stopwatch;
 
 import java.nio.file.Files;
 import java.nio.file.Path;

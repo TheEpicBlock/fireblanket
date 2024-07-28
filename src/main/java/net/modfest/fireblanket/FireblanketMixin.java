@@ -1,15 +1,14 @@
 package net.modfest.fireblanket;
 
-import java.util.List;
-import java.util.Set;
-
+import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.Bootstrap;
 import org.objectweb.asm.tree.ClassNode;
 import org.slf4j.LoggerFactory;
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin;
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
 
-import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.Bootstrap;
+import java.util.List;
+import java.util.Set;
 
 public class FireblanketMixin implements IMixinConfigPlugin {
 	public static final boolean GAMEPLAY_CHANGES = Boolean.getBoolean("fireblanket.gameplayChanges");
