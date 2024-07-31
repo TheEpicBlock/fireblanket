@@ -16,6 +16,8 @@
 		"be_sync.MixinChunkHolder",
 		"block.MixinCommandBlock",
 		"block_format.MixinChunkSection",
+		"command_block_perms.MixinCommandBlockBEExecutor",
+		"command_block_perms.MixinCommandBlockExecutor",
 		"entity_ticking.MixinDebugStickItem",
 		"entity_ticking.MixinEntity",
 		"entity_ticking.MixinItemGroups",
