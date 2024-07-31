@@ -76,6 +76,8 @@
 		"client.timing.MixinObservables",
 		"client.timing.MixinWorld",
 		"client.vbo_opto.MixinShaderProgram",
-		"client.vbo_opto.MixinVertexBuffer"
+		"client.vbo_opto.MixinVertexBuffer",
+		"gamemode_selection.MixinKeyboard",
+		"gamemode_selection.MixinSelectionScreen"
 	]
 }
